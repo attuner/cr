@@ -12,6 +12,7 @@
       --border: rgba(255, 255, 255, 0.1);
       --accent: #ff3366;
       --green: #00e676;
+      --cyan: #00d2ff;
       --text: #f0f6fc;
       --sub: #8b949e;
     }
@@ -25,11 +26,7 @@
       justify-content: center;
       min-height: 100vh;
     }
-    /* Expands cleanly on all viewport widths */
-    .admin-container {
-      width: 100%;
-      max-width: 1100px;
-    }
+    .admin-container { width: 100%; max-width: 1100px; }
     .header {
       display: flex;
       flex-wrap: wrap;
@@ -51,7 +48,7 @@
     h2 { font-size: 1.25rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.8rem; color: var(--sub); margin-bottom: 6px; }
-    .form-group input {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 10px 14px;
       border-radius: 8px;
@@ -73,7 +70,6 @@
     .btn-danger { background: #e63946; color: #fff; }
     .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
 
-    /* Tables & Sequence Lists */
     .table-responsive { width: 100%; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -97,6 +93,34 @@
       cursor: pointer;
     }
     .track-seq-btns button:hover { background: var(--accent); }
+
+    /* Hourly slot list box */
+    .slot-item {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--cyan);
+    }
+    .slot-track-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      margin: 4px 4px 4px 0;
+    }
+    .slot-track-tag i { cursor: pointer; color: #ff5252; }
 
     .toast {
       position: fixed;
@@ -134,31 +158,99 @@
     <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="verifyAdmin()">Login to Station Panel</button>
   </div>
 
-  <!-- Dashboard -->
   <div id="adminDashboard" style="display:none;">
     
-    <!-- 1. SEQUENCE REORDERING & AUDIO MANAGEMENT -->
+    <!-- 2) LIVE ONLINE LISTENERS LIST DETAILS -->
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2><i class="fa-solid fa-tower-broadcast" style="color:var(--green);"></i> Live Online Listeners Details</h2>
+        <button class="btn btn-sm" style="background:#21262d; color:#fff;" onclick="refreshAdminData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
+        Real-time details of users and guests currently connected to the radio broadcast.
+      </p>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Listener ID</th>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Last Active</th>
+            </tr>
+          </thead>
+          <tbody id="liveListenersTableBody">
+            <tr><td colspan="4" style="text-align:center; color:var(--sub);">No listeners currently online.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4) HOURLY BROADCAST SLOTS SCHEDULER (5 AM to 11 PM) -->
     <div class="panel">
       <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-        <h2><i class="fa-solid fa-list-ol"></i> Radio Player Sequence Manager</h2>
-        <button class="btn btn-primary btn-sm" onclick="saveNewSequence()">
-          <i class="fa-solid fa-floppy-disk"></i> Save Order to Sheet
-        </button>
+        <h2><i class="fa-solid fa-clock" style="color:var(--cyan);"></i> Hourly Slots Scheduler (5 AM – 11 PM)</h2>
+        <button class="btn btn-primary btn-sm" onclick="saveHourlySlots()"><i class="fa-solid fa-floppy-disk"></i> Save Hourly Slots</button>
+      </div>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
+        Select an hourly slot to add tracks. At the start of each hour, tracks assigned to that hour will begin playing immediately in this sequence to all online listeners. Unscheduled hours will play all audios by default serial order.
+      </p>
+
+      <!-- Slot Assign Form -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label>Select Hourly Slot</label>
+          <select id="slotHourSelector">
+            <option value="5">05:00 AM - 06:00 AM</option>
+            <option value="6">06:00 AM - 07:00 AM</option>
+            <option value="7">07:00 AM - 08:00 AM</option>
+            <option value="8">08:00 AM - 09:00 AM</option>
+            <option value="9">09:00 AM - 10:00 AM</option>
+            <option value="10">10:00 AM - 11:00 AM</option>
+            <option value="11">11:00 AM - 12:00 PM</option>
+            <option value="12">12:00 PM - 01:00 PM</option>
+            <option value="13">01:00 PM - 02:00 PM</option>
+            <option value="14">02:00 PM - 03:00 PM</option>
+            <option value="15">03:00 PM - 04:00 PM</option>
+            <option value="16">04:00 PM - 05:00 PM</option>
+            <option value="17">05:00 PM - 06:00 PM</option>
+            <option value="18">06:00 PM - 07:00 PM</option>
+            <option value="19">07:00 PM - 08:00 PM</option>
+            <option value="20">08:00 PM - 09:00 PM</option>
+            <option value="21">09:00 PM - 10:00 PM</option>
+            <option value="22">10:00 PM - 11:00 PM</option>
+            <option value="23">11:00 PM - 12:00 AM</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Select Audio Track to Add</label>
+          <select id="slotTrackSelector"></select>
+        </div>
+        <div style="display:flex; align-items:flex-end; margin-bottom:12px;">
+          <button class="btn btn-green btn-sm" style="width:100%; height:40px;" onclick="addTrackToSelectedSlot()"><i class="fa-solid fa-plus"></i> Add to Slot</button>
+        </div>
+      </div>
+
+      <div id="hourlySlotsDisplay"></div>
+    </div>
+
+    <!-- AUDIO SEQUENCE & REORDERING -->
+    <div class="panel">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
+        <h2><i class="fa-solid fa-list-ol"></i> Default Serial Sequence Manager</h2>
+        <button class="btn btn-primary btn-sm" onclick="saveNewSequence()"><i class="fa-solid fa-floppy-disk"></i> Save Order to Sheet</button>
       </div>
       <p style="font-size:0.8rem; color:var(--sub); margin-bottom:16px;">
-        Tracks play on real radio in this sequential loop 24/7. When you click <strong>Save Order to Sheet</strong>, all listeners immediately sync and start playing from the new sequence beginning.
+        This sequence plays automatically during hours without an assigned slot. When saved, all active radios immediately sync and play from Track #1.
       </p>
 
       <div id="sequenceList">Loading tracks...</div>
     </div>
 
-    <!-- 2. USER APPROVALS -->
+    <!-- CONTRIBUTOR APPROVALS -->
     <div class="panel">
       <h2><i class="fa-solid fa-user-check"></i> Contributor User Approvals</h2>
-      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
-        Users with 'pending' status can listen to 24/7 radio broadcasts freely, but cannot upload audio files to the Google Drive folder until approved.
-      </p>
-
       <div class="table-responsive">
         <table>
           <thead>
@@ -176,9 +268,9 @@
       </div>
     </div>
 
-    <!-- 3. BROADCAST SETTINGS -->
+    <!-- SETTINGS -->
     <div class="panel">
-      <h2><i class="fa-solid fa-gear"></i> Radio Broadcast Settings</h2>
+      <h2><i class="fa-solid fa-gear"></i> Broadcast Settings</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
         <div class="form-group">
           <label>Station Display Name</label>
@@ -186,7 +278,7 @@
         </div>
         <div class="form-group">
           <label>Broadcast Schedule</label>
-          <input type="text" value="24/7 Live Continuous" disabled>
+          <input type="text" value="24/7 Live Continuous + Hourly Schedule" disabled>
         </div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Settings</button>
@@ -202,6 +294,7 @@
   let adminPasscode = "";
   let tracks = [];
   let users = [];
+  let hourlySchedules = {}; // { "5": [fileId1, ...], ... }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -221,6 +314,7 @@
         adminPasscode = pass;
         tracks = data.tracks || [];
         users = data.users || [];
+        hourlySchedules = data.hourly || {};
         document.getElementById('authGate').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'block';
         if (data.settings && data.settings.station_name) {
@@ -228,6 +322,12 @@
         }
         renderTracks();
         renderUsers();
+        renderLiveListeners(data.activeListeners || []);
+        renderHourlySlotsUI();
+        populateTrackSelector();
+
+        // Refresh admin data every 15 seconds
+        setInterval(refreshAdminData, 15000);
       } else {
         showToast(data.message || "Invalid Passcode");
       }
@@ -236,6 +336,113 @@
     }
   }
 
+  async function refreshAdminData() {
+    if (!adminPasscode) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}?action=getAdminData&key=${encodeURIComponent(adminPasscode)}`);
+      const data = await res.json();
+      if (data.success) {
+        renderLiveListeners(data.activeListeners || []);
+      }
+    } catch(e) {}
+  }
+
+  // 2) Render Live Listeners Details Table
+  function renderLiveListeners(listeners) {
+    const tbody = document.getElementById('liveListenersTableBody');
+    if (!listeners || listeners.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--sub);">No listeners currently online.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = listeners.map(l => `
+      <tr>
+        <td><code>${l.listenerId}</code></td>
+        <td><strong>${l.username}</strong></td>
+        <td><span style="color: ${l.status === 'Listening Live' ? 'var(--green)' : 'var(--sub)'}; font-weight:600;"><i class="fa-solid fa-circle" style="font-size:0.5rem; vertical-align:middle; margin-right:4px;"></i>${l.status}</span></td>
+        <td style="color:var(--sub); font-size:0.8rem;">${l.lastSeen}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Populate Dropdown for track assignments
+  function populateTrackSelector() {
+    const sel = document.getElementById('slotTrackSelector');
+    if (tracks.length === 0) {
+      sel.innerHTML = `<option value="">No tracks available</option>`;
+      return;
+    }
+    sel.innerHTML = tracks.map(t => `<option value="${t.fileId}">[#${t.seq}] ${t.title} (${t.contributor || 'Community'})</option>`).join('');
+  }
+
+  // 4) Hourly Slots Management (5 AM to 11 PM)
+  function renderHourlySlotsUI() {
+    const container = document.getElementById('hourlySlotsDisplay');
+    let html = '';
+
+    for (let h = 5; h <= 23; h++) {
+      const list = hourlySchedules[String(h)] || [];
+      const formattedHour = (h % 12 || 12) + (h >= 12 ? ':00 PM' : ':00 AM') + ' - ' + ((h + 1) % 12 || 12) + ((h + 1) >= 12 && (h + 1) < 24 ? ':00 PM' : ':00 AM');
+
+      html += `
+        <div class="slot-item">
+          <div class="slot-header">
+            <span><i class="fa-regular fa-clock" style="margin-right:6px;"></i>${formattedHour}</span>
+            <span style="font-size:0.75rem; color:${list.length > 0 ? 'var(--green)' : 'var(--sub)'};">
+              ${list.length > 0 ? list.length + ' Track(s) scheduled' : 'Default serial playback'}
+            </span>
+          </div>
+          <div>
+            ${list.length === 0 ? '<span style="font-size:0.75rem; color:var(--sub);">No tracks set. All library tracks play sequentially.</span>' : ''}
+            ${list.map((fileId, idx) => {
+              const trk = tracks.find(t => t.fileId === fileId);
+              const title = trk ? trk.title : 'Track (' + fileId + ')';
+              return `
+                <span class="slot-track-tag">
+                  <strong>#${idx + 1}</strong>${title}
+                  <i class="fa-solid fa-circle-xmark" onclick="removeTrackFromSlot(${h},${idx})"></i>
+                </span>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  }
+
+  function addTrackToSelectedSlot() {
+    const hour = document.getElementById('slotHourSelector').value;
+    const fileId = document.getElementById('slotTrackSelector').value;
+    if (!fileId) return showToast("Select an audio track");
+
+    if (!hourlySchedules[hour]) hourlySchedules[hour] = [];
+    hourlySchedules[hour].push(fileId);
+    renderHourlySlotsUI();
+    showToast(`Track added to ${hour}:00 slot. Remember to click 'Save Hourly Slots'.`);
+  }
+
+  function removeTrackFromSlot(hour, index) {
+    if (hourlySchedules[String(hour)]) {
+      hourlySchedules[String(hour)].splice(index, 1);
+      renderHourlySlotsUI();
+    }
+  }
+
+  async function saveHourlySlots() {
+    showToast("Saving hourly schedules...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "saveHourlySchedule", adminKey: adminPasscode, schedules: hourlySchedules })
+      });
+      const data = await res.json();
+      showToast(data.message || "Hourly schedule saved!");
+    } catch(e) {
+      showToast("Error saving hourly schedule");
+    }
+  }
+
+  // Track Default Sequence UI
   function renderTracks() {
     const box = document.getElementById('sequenceList');
     if (tracks.length === 0) {
@@ -271,9 +478,9 @@
     tracks[index] = tracks[target];
     tracks[target] = temp;
     renderTracks();
+    populateTrackSelector();
   }
 
-  // When saved, increments version on backend causing all client radios to restart from track #1 immediately
   async function saveNewSequence() {
     const orderedIds = tracks.map(t => t.fileId);
     showToast("Updating sequence and syncing radios...");
@@ -301,6 +508,7 @@
       if (data.success) {
         tracks = tracks.filter(t => t.fileId !== fileId);
         renderTracks();
+        populateTrackSelector();
         showToast("Track deleted");
       }
     } catch(e) {
