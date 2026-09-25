@@ -1,0 +1,21 @@
+{
+  "name": "Community Radio Live",
+  "short_name": "RadioLive",
+  "start_url": "./radio.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#05070a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075908.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075908.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

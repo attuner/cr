@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Station Management | Community Radio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #ff3366;
+      --green: #00e676;
+      --text: #f0f6fc;
+      --sub: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .admin-container { width: 100%; max-width: 900px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    h2 { font-size: 1.25rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--sub); margin-bottom: 6px; }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #090d16;
+      border: 1px solid var(--border);
+      color: #fff;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-green { background: var(--green); color: #000; }
+    .btn-danger { background: #e63946; color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 0.75rem; }
+
+    /* Tables & Lists */
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--sub); font-size: 0.75rem; text-transform: uppercase; }
+
+    .track-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); }
+    .track-seq-btns { display: flex; gap: 6px; }
+    .track-seq-btns button { background: #21262d; border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+    .track-seq-btns button:hover { background: var(--accent); }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ff3366;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<div class="admin-container">
+  <div class="header">
+    <h1><i class="fa-solid fa-sliders"></i> Station Admin Portal</h1>
+    <a href="radio.html" style="color:var(--sub); text-decoration:none; font-size:0.85rem;"><i class="fa-solid fa-arrow-left"></i> Open Radio App</a>
+  </div>
+
+  <!-- PASSCODE GATE -->
+  <div id="authGate" class="panel" style="max-width: 400px; margin: 40px auto; text-align: center;">
+    <h2>Admin Authentication</h2>
+    <div class="form-group" style="text-align:left; margin-top:16px;">
+      <label>Passcode Key</label>
+      <input type="password" id="adminPasscode" placeholder="Default: admin123">
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="verifyAdmin()">Login to Station Panel</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="adminDashboard" style="display:none;">
+    
+    <!-- 1. SEQUENCE REORDERING & AUDIO MANAGEMENT -->
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2><i class="fa-solid fa-list-ol"></i> Radio Player Sequence Manager</h2>
+        <button class="btn btn-primary btn-sm" onclick="saveNewSequence()"><i class="fa-solid fa-floppy-disk"></i> Save Order to Sheet</button>
+      </div>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:16px;">
+        Tracks play on real radio in this sequential order, looping continuously throughout morning and evening sessions. Use the arrows to rearrange.
+      </p>
+
+      <div id="sequenceList">Loading tracks...</div>
+    </div>
+
+    <!-- 2. USER APPROVALS -->
+    <div class="panel">
+      <h2><i class="fa-solid fa-user-check"></i> Contributor User Approvals</h2>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
+        Users with 'pending' status can listen to radio broadcasts, but cannot upload audio files to the Google Drive folder until approved.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody">
+          <tr><td colspan="4" style="text-align:center;">Loading users...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3. BROADCAST SETTINGS -->
+    <div class="panel">
+      <h2><i class="fa-solid fa-gear"></i> Radio Broadcast Settings</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label>Station Display Name</label>
+          <input type="text" id="cfgStationName" value="Community Voice FM">
+        </div>
+        <div class="form-group">
+          <label>Morning Live Broadcast</label>
+          <input type="text" id="cfgMorning" value="05:00 - 11:00" disabled>
+        </div>
+        <div class="form-group">
+          <label>Evening Live Broadcast</label>
+          <input type="text" id="cfgEvening" value="17:00 - 23:00" disabled>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Settings</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ================= CONFIGURATION =================
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFH6Rd-tyVlWjX96eJu-y2HnOy7qKvZlt96pTzAIipv0k0Oo0yNUDrS8ecUlOu-y2O-g/exec";
+
+  let adminPasscode = "";
+  let tracks = [];
+  let users = [];
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  async function verifyAdmin() {
+    const pass = document.getElementById('adminPasscode').value.trim();
+    if (!pass) return showToast("Enter passcode");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}?action=getAdminData&key=${encodeURIComponent(pass)}`);
+      const data = await res.json();
+      if (data.success) {
+        adminPasscode = pass;
+        tracks = data.tracks || [];
+        users = data.users || [];
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'block';
+        if (data.settings && data.settings.station_name) {
+          document.getElementById('cfgStationName').value = data.settings.station_name;
+        }
+        renderTracks();
+        renderUsers();
+      } else {
+        showToast(data.message || "Invalid Passcode");
+      }
+    } catch(e) {
+      showToast("Could not connect to Google Apps Script");
+    }
+  }
+
+  // --- Track Ordering UI ---
+  function renderTracks() {
+    const box = document.getElementById('sequenceList');
+    if (tracks.length === 0) {
+      box.innerHTML = `<p style="color:var(--sub); font-size:0.85rem;">No tracks uploaded yet.</p>`;
+      return;
+    }
+    box.innerHTML = tracks.map((t, idx) => `
+      <div class="track-row">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <strong style="width:24px; color:var(--accent);">${idx + 1}</strong>
+          <div>
+            <div style="font-weight:600;">${t.title}</div>
+            <div style="font-size:0.75rem; color:var(--sub);">Contributor: ${t.contributor || 'Community'} | ${t.description || ''}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <div class="track-seq-btns">
+            <button onclick="moveTrack(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+            <button onclick="moveTrack(${idx}, 1)" ${idx === tracks.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteTrack('${t.fileId}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function moveTrack(index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= tracks.length) return;
+    const temp = tracks[index];
+    tracks[index] = tracks[target];
+    tracks[target] = temp;
+    renderTracks();
+  }
+
+  async function saveNewSequence() {
+    const orderedIds = tracks.map(t => t.fileId);
+    showToast("Updating sequence...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "adminReorderTracks", adminKey: adminPasscode, orderedIds })
+      });
+      const data = await res.json();
+      showToast(data.message || "Sequence Saved");
+    } catch(e) {
+      showToast("Error updating sequence");
+    }
+  }
+
+  async function deleteTrack(fileId) {
+    if (!confirm("Are you sure you want to delete this track from Community Radio?")) return;
+    showToast("Deleting...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "adminDeleteTrack", adminKey: adminPasscode, fileId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        tracks = tracks.filter(t => t.fileId !== fileId);
+        renderTracks();
+        showToast("Track deleted");
+      }
+    } catch(e) {
+      showToast("Error deleting track");
+    }
+  }
+
+  // --- Users UI ---
+  function renderUsers() {
+    const tbody = document.getElementById('userTableBody');
+    if (users.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--sub);">No users registered yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td><strong>${u.username}</strong></td>
+        <td>${u.mobile}</td>
+        <td>
+          <span style="color:${u.status === 'approved' ? 'var(--green)' : '#ffc107'}; font-weight:600; text-transform:uppercase; font-size:0.75rem;">
+            ${u.status}
+          </span>
+        </td>
+        <td>
+          ${u.status === 'approved' 
+            ? `<button class="btn btn-danger btn-sm" onclick="setUserStatus('${u.mobile}', 'pending')">Revoke</button>`
+            : `<button class="btn btn-green btn-sm" onclick="setUserStatus('${u.mobile}', 'approved')">Approve Uploads</button>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function setUserStatus(mobile, status) {
+    showToast("Updating user...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "adminUpdateUserStatus", adminKey: adminPasscode, mobile, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const target = users.find(u => String(u.mobile) === String(mobile));
+        if (target) target.status = status;
+        renderUsers();
+        showToast(data.message);
+      }
+    } catch(e) {
+      showToast("Error updating user status");
+    }
+  }
+
+  // --- Settings ---
+  async function saveSettings() {
+    const station_name = document.getElementById('cfgStationName').value.trim();
+    showToast("Saving settings...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "adminSaveSettings", adminKey: adminPasscode, settings: { station_name } })
+      });
+      const data = await res.json();
+      showToast(data.message || "Settings Saved");
+    } catch(e) {
+      showToast("Error saving settings");
+    }
+  }
+</script>
+
+</body>
+</html>

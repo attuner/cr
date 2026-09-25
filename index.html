@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Community Radio</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 27, 34, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #ff3366;
+      --accent-glow: rgba(255, 51, 102, 0.4);
+      --cyan: #00d2ff;
+      --green: #00e676;
+      --text: #f0f6fc;
+      --subtext: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background-image: radial-gradient(circle at 50% 10%, #1a2236 0%, #090d16 80%);
+    }
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 70px;
+    }
+    header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.5px;
+    }
+    .logo i { color: var(--accent); font-size: 1.3rem; }
+    .session-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+    }
+    .session-badge.live { background: rgba(0, 230, 118, 0.15); border-color: rgba(0, 230, 118, 0.4); color: var(--green); }
+    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.3); } 100% { opacity: 0.3; transform: scale(0.9); } }
+
+    main { flex: 1; padding: 16px; overflow-y: auto; }
+    .page-tab { display: none; }
+    .page-tab.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Radio Deck */
+    .tuner-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+    .vinyl-wrapper {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 10px auto 20px;
+    }
+    .vinyl {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(#111, #222, #111, #333, #111);
+      border: 5px solid #222;
+      box-shadow: 0 0 25px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: spin 10s linear infinite;
+      animation-play-state: paused;
+    }
+    .vinyl.spinning { animation-play-state: running; }
+    .vinyl-center {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 4px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.3rem;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .track-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-contributor { font-size: 0.82rem; color: var(--cyan); margin-bottom: 12px; }
+    .track-desc { font-size: 0.85rem; color: var(--subtext); line-height: 1.4; margin-bottom: 20px; min-height: 38px; }
+
+    .main-switch-btn {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ff6b8b);
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      transition: 0.2s;
+      outline: none;
+    }
+    .main-switch-btn:active { transform: scale(0.92); }
+    .main-switch-btn.playing { background: linear-gradient(135deg, #10b981, #00e676); box-shadow: 0 8px 24px rgba(0, 230, 118, 0.4); }
+
+    /* Schedule Ribbon */
+    .schedule-ribbon {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .schedule-ribbon strong { display: block; font-size: 0.88rem; color: #fff; margin-bottom: 2px; }
+
+    /* Queue List */
+    .section-title { font-size: 0.95rem; font-weight: 700; margin: 20px 0 12px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.8px; }
+    .track-list { display: flex; flex-direction: column; gap: 8px; }
+    .track-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+    }
+    .track-item.current { border-color: var(--accent); background: rgba(255, 51, 102, 0.08); }
+    .track-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Forms */
+    .auth-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 22px;
+      backdrop-filter: blur(10px);
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.78rem; color: var(--subtext); margin-bottom: 6px; font-weight: 600; }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.08); color: #fff; margin-top: 8px; }
+    .btn:active { transform: scale(0.97); }
+
+    /* User Profile Hub */
+    .profile-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .user-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .tag-approved { background: rgba(0, 230, 118, 0.2); color: var(--green); }
+    .tag-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: 62px;
+      background: rgba(13, 17, 23, 0.95);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      backdrop-filter: blur(16px);
+      z-index: 50;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--subtext);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      flex: 1;
+    }
+    .nav-btn i { font-size: 1.15rem; }
+    .nav-btn.active { color: var(--accent); }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      border: 1px solid var(--accent);
+      padding: 10px 18px;
+      border-radius: 25px;
+      font-size: 0.8rem;
+      z-index: 100;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<div class="app-shell">
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-tower-broadcast"></i>
+      <span id="stationNameDisplay">Community Voice FM</span>
+    </div>
+    <div id="sessionIndicator" class="session-badge">
+      <span class="pulse-dot"></span>
+      <span id="sessionStatusText">Checking...</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: RADIO PLAYER -->
+    <div id="radioTab" class="page-tab active">
+      <div class="schedule-ribbon">
+        <div><strong>Morning Live</strong>05:00 AM – 11:00 AM</div>
+        <div><strong>Evening Live</strong>05:00 PM – 11:00 PM</div>
+      </div>
+
+      <div class="tuner-card">
+        <div class="vinyl-wrapper">
+          <div id="vinyl" class="vinyl">
+            <div class="vinyl-center"><i class="fa-solid fa-radio"></i></div>
+          </div>
+        </div>
+
+        <div class="track-title" id="trackTitleDisplay">Radio Off</div>
+        <div class="track-contributor" id="trackContributorDisplay">Tap switch to start broadcast</div>
+        <div class="track-desc" id="trackDescDisplay">Continuous community radio sequence. Zero delays between tracks.</div>
+
+        <button id="radioPowerBtn" class="main-switch-btn" onclick="toggleRadio()">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </div>
+
+      <div class="section-title">Broadcast Sequence</div>
+      <div class="track-list" id="trackQueueList">
+        <div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">Loading sequence...</div>
+      </div>
+    </div>
+
+    <!-- TAB 2: COMBINED ACCOUNT & UPLOAD HUB -->
+    <div id="accountTab" class="page-tab">
+      
+      <!-- Guest: Register / Login -->
+      <div id="authGuestBox">
+        <div class="auth-card" id="loginFormBox">
+          <h3 style="margin-bottom:14px;">Member Login</h3>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="loginMobile" placeholder="e.g. 9876543210">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="Enter password">
+          </div>
+          <button class="btn btn-primary" onclick="submitLogin()">Sign In</button>
+          <button class="btn btn-secondary" onclick="toggleAuthMode('register')">Create New Account</button>
+        </div>
+
+        <div class="auth-card" id="registerFormBox" style="display:none;">
+          <h3 style="margin-bottom:14px;">Register Contributor</h3>
+          <div class="form-group">
+            <label>Username (Displayed on Radio)</label>
+            <input type="text" id="regUsername" placeholder="e.g. RJ Rajesh">
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="regMobile" placeholder="e.g. 9876543210">
+          </div>
+          <div class="form-group">
+            <label>Unique Password</label>
+            <input type="password" id="regPass" placeholder="Create password">
+          </div>
+          <button class="btn btn-primary" onclick="submitRegister()">Register Now</button>
+          <button class="btn btn-secondary" onclick="toggleAuthMode('login')">Already have an account?</button>
+        </div>
+      </div>
+
+      <!-- Logged-in Dashboard -->
+      <div id="authMemberBox" style="display:none;">
+        <div class="profile-card">
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;" id="profUsername">User</div>
+            <div style="color:var(--subtext); font-size:0.8rem;" id="profMobile">+91-0000000000</div>
+            <div id="profStatusBadge" class="user-tag tag-pending">Pending Approval</div>
+          </div>
+          <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:0.75rem;" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Contributor Upload Section -->
+        <div id="uploadGateBox">
+          <!-- Shown if approved -->
+          <div id="uploadAllowedSection" class="auth-card" style="display:none; margin-bottom: 20px;">
+            <h3 style="margin-bottom:6px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--cyan); margin-right:6px;"></i>Upload to Radio</h3>
+            <p style="font-size:0.78rem; color:var(--subtext); margin-bottom:14px;">Files are automatically placed in the Community Radio sequence.</p>
+            
+            <div class="form-group">
+              <label>Audio Title</label>
+              <input type="text" id="audioTitle" placeholder="e.g. Morning Folk Tunes">
+            </div>
+            <div class="form-group">
+              <label>Audio Description</label>
+              <textarea id="audioDesc" rows="2" placeholder="Brief info about this audio..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Audio File (.mp3, .m4a, .aac, .wav)</label>
+              <input type="file" id="audioFileInput" accept="audio/*">
+            </div>
+            <button class="btn btn-primary" id="uploadBtn" onclick="uploadAudio()">Upload Audio File</button>
+          </div>
+
+          <!-- Shown if pending -->
+          <div id="uploadLockedSection" class="auth-card" style="text-align:center; padding: 24px 16px; margin-bottom:20px; display:none;">
+            <i class="fa-solid fa-clock-rotate-left" style="font-size:2.2rem; color:#ffc107; margin-bottom:12px;"></i>
+            <h4>Contributor Approval Pending</h4>
+            <p style="font-size:0.8rem; color:var(--subtext); margin-top:8px;">
+              You can listen to all live radio broadcasts freely. Audio upload privileges will be unlocked once approved by the station administrator.
+            </p>
+          </div>
+        </div>
+
+        <!-- My Uploaded Tracks -->
+        <div class="section-title">My Contributions</div>
+        <div class="track-list" id="myUploadsList">
+          <div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No audio uploaded yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('radioTab', this)">
+      <i class="fa-solid fa-radio"></i>
+      <span>Radio</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('accountTab', this)">
+      <i class="fa-solid fa-user-circle"></i>
+      <span>Account & Upload</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+  // ================= CONFIGURATION =================
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFH6Rd-tyVlWjX96eJu-y2HnOy7qKvZlt96pTzAIipv0k0Oo0yNUDrS8ecUlOu-y2O-g/exec";
+
+  // State
+  let playlist = [];
+  let currentIndex = 0;
+  let isPlaying = false;
+  let currentUser = JSON.parse(localStorage.getItem('cr_user') || 'null');
+
+  // Dual Audio Player for Instant, Zero-Gap Real Radio Experience
+  let activePlayer = new Audio();
+  let standbyPlayer = new Audio();
+  let isStandbyReady = false;
+
+  // Clear session cache on initial load
+  window.addEventListener('load', () => {
+    if ('caches' in window) {
+      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    initScheduleChecker();
+    fetchStationData();
+    renderAuth();
+  });
+
+  // UI Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3200);
+  }
+
+  // Navigation
+  function switchTab(tabId, el) {
+    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    el.classList.add('active');
+  }
+
+  // Schedule Checker (5 AM - 11 AM & 5 PM - 11 PM)
+  function isSessionLive() {
+    const now = new Date();
+    const h = now.getHours();
+    return (h >= 5 && h < 11) || (h >= 17 && h < 23);
+  }
+
+  function initScheduleChecker() {
+    function update() {
+      const live = isSessionLive();
+      const badge = document.getElementById('sessionIndicator');
+      const txt = document.getElementById('sessionStatusText');
+      if (live) {
+        badge.className = "session-badge live";
+        txt.innerText = "ON AIR LIVE";
+      } else {
+        badge.className = "session-badge";
+        txt.innerText = "OFF AIR";
+      }
+    }
+    update();
+    setInterval(update, 30000);
+  }
+
+  // Fetch Station Playlist & Sequence
+  async function fetchStationData() {
+    try {
+      const res = await fetch(`${BACKEND_URL}?action=getStationData`);
+      const data = await res.json();
+      if (data.success) {
+        playlist = data.tracks || [];
+        if (data.settings && data.settings.station_name) {
+          document.getElementById('stationNameDisplay').innerText = data.settings.station_name;
+        }
+        renderQueue();
+        renderMyUploads();
+        if (isPlaying && playlist.length > 0) {
+          prepareStandbyTrack();
+        }
+      }
+    } catch (e) {
+      console.warn("Backend not reached yet or offline.");
+    }
+  }
+
+  function renderQueue() {
+    const box = document.getElementById('trackQueueList');
+    if (!playlist || playlist.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No audio sequences found in Community Radio folder.</div>`;
+      return;
+    }
+    box.innerHTML = playlist.map((item, idx) => `
+      <div class="track-item ${idx === currentIndex && isPlaying ? 'current' : ''}">
+        <div class="track-num">${item.seq || (idx + 1)}</div>
+        <div style="flex:1; overflow:hidden;">
+          <div style="font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${item.title}</div>
+          <div style="font-size:0.75rem; color:var(--subtext);">by ${item.contributor || 'Community'}</div>
+        </div>
+        <i class="fa-solid fa-volume-high" style="color: ${idx === currentIndex && isPlaying ? 'var(--accent)' : 'transparent'}; font-size:0.8rem;"></i>
+      </div>
+    `).join('');
+  }
+
+  // ================= ZERO-GAP DUAL-BUFFER ENGINE =================
+  function setupPlayerEvents(player) {
+    player.addEventListener('timeupdate', () => {
+      // Pre-buffer standby track 4 seconds before current ends
+      if (player.duration && (player.duration - player.currentTime <= 4) && !isStandbyReady) {
+        prepareStandbyTrack();
+      }
+    });
+
+    player.addEventListener('ended', () => {
+      advanceTrackInstantly();
+    });
+
+    player.addEventListener('error', () => {
+      advanceTrackInstantly();
+    });
+  }
+
+  setupPlayerEvents(activePlayer);
+  setupPlayerEvents(standbyPlayer);
+
+  function prepareStandbyTrack() {
+    if (playlist.length <= 1) return;
+    const nextIdx = (currentIndex + 1) % playlist.length;
+    standbyPlayer.src = playlist[nextIdx].streamUrl;
+    standbyPlayer.load();
+    isStandbyReady = true;
+  }
+
+  function advanceTrackInstantly() {
+    currentIndex = (currentIndex + 1) % playlist.length;
+    
+    // Swap pointers
+    const temp = activePlayer;
+    activePlayer = standbyPlayer;
+    standbyPlayer = temp;
+    isStandbyReady = false;
+
+    if (!activePlayer.src || activePlayer.src === "") {
+      activePlayer.src = playlist[currentIndex].streamUrl;
+    }
+
+    activePlayer.play().catch(() => {});
+    updateMediaSession();
+    updateTunerUI();
+    renderQueue();
+  }
+
+  function toggleRadio() {
+    if (!playlist || playlist.length === 0) {
+      showToast("Playlist is loading or empty.");
+      return;
+    }
+
+    if (isPlaying) {
+      activePlayer.pause();
+      isPlaying = false;
+      updateTunerUI();
+    } else {
+      activePlayer.src = playlist[currentIndex].streamUrl;
+      activePlayer.play().then(() => {
+        isPlaying = true;
+        isStandbyReady = false;
+        prepareStandbyTrack();
+        updateMediaSession();
+        updateTunerUI();
+      }).catch(err => {
+        showToast("Audio playback allowed on user tap.");
+      });
+    }
+  }
+
+  function updateTunerUI() {
+    const btn = document.getElementById('radioPowerBtn');
+    const vinyl = document.getElementById('vinyl');
+    const title = document.getElementById('trackTitleDisplay');
+    const contrib = document.getElementById('trackContributorDisplay');
+    const desc = document.getElementById('trackDescDisplay');
+
+    if (isPlaying && playlist[currentIndex]) {
+      btn.classList.add('playing');
+      vinyl.classList.add('spinning');
+      title.innerText = playlist[currentIndex].title;
+      contrib.innerText = "Curated by " + (playlist[currentIndex].contributor || "Community Voice");
+      desc.innerText = playlist[currentIndex].description || "Live sequential broadcast";
+    } else {
+      btn.classList.remove('playing');
+      vinyl.classList.remove('spinning');
+      title.innerText = "Radio Paused";
+      contrib.innerText = "Tap switch to listen";
+    }
+    renderQueue();
+  }
+
+  // Lock-screen background playback support
+  function updateMediaSession() {
+    if ('mediaSession' in navigator && playlist[currentIndex]) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: playlist[currentIndex].title,
+        artist: playlist[currentIndex].contributor || "Community Radio",
+        album: "Community Radio Broadcast",
+        artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3075/3075908.png', sizes: '512x512', type: 'image/png' }]
+      });
+      navigator.mediaSession.setActionHandler('play', () => toggleRadio());
+      navigator.mediaSession.setActionHandler('pause', () => toggleRadio());
+      navigator.mediaSession.setActionHandler('nexttrack', () => advanceTrackInstantly());
+    }
+  }
+
+  // ================= COMBINED ACCOUNT & UPLOADS =================
+  function toggleAuthMode(mode) {
+    document.getElementById('loginFormBox').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('registerFormBox').style.display = mode === 'register' ? 'block' : 'none';
+  }
+
+  async function submitRegister() {
+    const username = document.getElementById('regUsername').value.trim();
+    const mobile = document.getElementById('regMobile').value.trim();
+    const password = document.getElementById('regPass').value.trim();
+
+    if (!username || !mobile || !password) return showToast("Please fill all registration fields.");
+
+    showToast("Registering account...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "register", username, mobile, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        currentUser = data.user;
+        localStorage.setItem('cr_user', JSON.stringify(currentUser));
+        renderAuth();
+        showToast("Account created!");
+      } else {
+        showToast(data.message || "Registration failed");
+      }
+    } catch(e) {
+      showToast("Network error. Verify Script URL.");
+    }
+  }
+
+  async function submitLogin() {
+    const mobile = document.getElementById('loginMobile').value.trim();
+    const password = document.getElementById('loginPass').value.trim();
+    if (!mobile || !password) return showToast("Enter mobile & password");
+
+    showToast("Authenticating...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "login", mobile, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        currentUser = data.user;
+        localStorage.setItem('cr_user', JSON.stringify(currentUser));
+        renderAuth();
+        showToast("Welcome back, " + currentUser.username);
+      } else {
+        showToast(data.message || "Login failed");
+      }
+    } catch(e) {
+      showToast("Error connecting to backend");
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('cr_user');
+    renderAuth();
+  }
+
+  function renderAuth() {
+    const guestBox = document.getElementById('authGuestBox');
+    const memberBox = document.getElementById('authMemberBox');
+
+    if (!currentUser) {
+      guestBox.style.display = 'block';
+      memberBox.style.display = 'none';
+    } else {
+      guestBox.style.display = 'none';
+      memberBox.style.display = 'block';
+
+      document.getElementById('profUsername').innerText = currentUser.username;
+      document.getElementById('profMobile').innerText = currentUser.mobile;
+
+      const badge = document.getElementById('profStatusBadge');
+      const isApproved = (currentUser.status === 'approved');
+
+      badge.className = isApproved ? "user-tag tag-approved" : "user-tag tag-pending";
+      badge.innerText = isApproved ? "Approved Contributor" : "Pending Admin Approval";
+
+      document.getElementById('uploadAllowedSection').style.display = isApproved ? 'block' : 'none';
+      document.getElementById('uploadLockedSection').style.display = isApproved ? 'none' : 'block';
+
+      renderMyUploads();
+    }
+  }
+
+  function renderMyUploads() {
+    if (!currentUser) return;
+    const box = document.getElementById('myUploadsList');
+    const mine = playlist.filter(p => p.contributor === currentUser.username);
+
+    if (mine.length === 0) {
+      box.innerHTML = `<div style="text-align:center; padding: 18px; color: var(--subtext); font-size: 0.85rem;">No tracks uploaded yet.</div>`;
+      return;
+    }
+
+    box.innerHTML = mine.map(t => `
+      <div class="track-item">
+        <div class="track-num"><i class="fa-solid fa-music"></i></div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">${t.title}</div>
+          <div style="font-size:0.75rem; color:var(--subtext);">${t.description || 'No description'}</div>
+        </div>
+        <span class="user-tag tag-approved">In Sequence</span>
+      </div>
+    `).join('');
+  }
+
+  // Convert File to Base64 and Upload to Google Drive
+  async function uploadAudio() {
+    const title = document.getElementById('audioTitle').value.trim();
+    const description = document.getElementById('audioDesc').value.trim();
+    const fileInput = document.getElementById('audioFileInput');
+    const btn = document.getElementById('uploadBtn');
+
+    if (!title) return showToast("Enter a title for your audio");
+    if (!fileInput.files || fileInput.files.length === 0) return showToast("Select an audio file");
+
+    const file = fileInput.files[0];
+    if (file.size > 25 * 1024 * 1024) return showToast("File exceeds max 25MB limit.");
+
+    btn.disabled = true;
+    btn.innerText = "Encoding & Uploading to Drive...";
+
+    const reader = new FileReader();
+    reader.onload = async function() {
+      const base64Data = reader.result.split(',')[1];
+      try {
+        const payload = {
+          action: "uploadAudio",
+          mobile: currentUser.mobile,
+          username: currentUser.username,
+          title,
+          description,
+          fileName: file.name,
+          mimeType: file.type,
+          base64File: base64Data
+        };
+
+        const res = await fetch(BACKEND_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          showToast("Upload Successful!");
+          document.getElementById('audioTitle').value = "";
+          document.getElementById('audioDesc').value = "";
+          fileInput.value = "";
+          fetchStationData();
+        } else {
+          showToast(result.message || "Upload rejected");
+        }
+      } catch (err) {
+        showToast("Error uploading track.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Upload Audio File";
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
+
+</body>
+</html>
