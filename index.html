@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Community Radio</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#090d16">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,35 +28,41 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       background-image: radial-gradient(circle at 50% 10%, #1a2236 0%, #090d16 80%);
     }
     .app-shell {
       width: 100%;
-      max-width: 480px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      position: relative;
-      padding-bottom: 70px;
     }
+    /* Top Header responsive bar */
     header {
-      padding: 16px 20px;
+      width: 100%;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
-      z-index: 40;
+      z-index: 50;
       border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.85);
+    }
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: clamp(1rem, 2vw, 1.25rem);
     }
     .logo i { color: var(--accent); font-size: 1.3rem; }
     .session-badge {
@@ -66,42 +72,82 @@
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
+      font-weight: 700;
+      background: rgba(0, 230, 118, 0.15);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      color: var(--green);
     }
-    .session-badge.live { background: rgba(0, 230, 118, 0.15); border-color: rgba(0, 230, 118, 0.4); color: var(--green); }
     .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.4s infinite; }
     @keyframes pulse { 0% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.3); } 100% { opacity: 0.3; transform: scale(0.9); } }
 
-    main { flex: 1; padding: 16px; overflow-y: auto; }
-    .page-tab { display: none; }
-    .page-tab.active { display: block; animation: fadeIn 0.25s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-header {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-header:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.2); }
+    .btn-install {
+      background: linear-gradient(135deg, var(--cyan), #0077ff);
+      border: none;
+      color: #fff;
+      display: none; /* revealed on beforeinstallprompt */
+    }
+
+    /* Content Area */
+    main {
+      flex: 1;
+      width: 100%;
+      padding: 24px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .content-wrapper {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
     /* Radio Deck */
     .tuner-card {
+      width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 24px 20px;
+      border-radius: 28px;
+      padding: clamp(24px, 4vw, 40px) 20px;
       text-align: center;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.5);
-      margin-bottom: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
     }
     .vinyl-wrapper {
       position: relative;
-      width: 170px;
-      height: 170px;
-      margin: 10px auto 20px;
+      width: clamp(170px, 28vw, 240px);
+      height: clamp(170px, 28vw, 240px);
+      margin: 10px auto 24px;
     }
     .vinyl {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background: conic-gradient(#111, #222, #111, #333, #111);
-      border: 5px solid #222;
-      box-shadow: 0 0 25px rgba(0,0,0,0.8);
+      border: 6px solid #222;
+      box-shadow: 0 0 30px rgba(0,0,0,0.85);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -110,8 +156,8 @@
     }
     .vinyl.spinning { animation-play-state: running; }
     .vinyl-center {
-      width: 60px;
-      height: 60px;
+      width: clamp(60px, 10vw, 80px);
+      height: clamp(60px, 10vw, 80px);
       border-radius: 50%;
       background: var(--accent);
       border: 4px solid #fff;
@@ -119,87 +165,82 @@
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 1.3rem;
+      font-size: clamp(1.2rem, 2vw, 1.6rem);
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    .track-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-contributor { font-size: 0.82rem; color: var(--cyan); margin-bottom: 12px; }
-    .track-desc { font-size: 0.85rem; color: var(--subtext); line-height: 1.4; margin-bottom: 20px; min-height: 38px; }
+    .track-title { font-size: clamp(1.2rem, 2.5vw, 1.55rem); font-weight: 700; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-contributor { font-size: 0.88rem; color: var(--cyan); margin-bottom: 14px; font-weight: 500; }
+    .track-desc { font-size: 0.88rem; color: var(--subtext); line-height: 1.4; margin-bottom: 26px; min-height: 40px; }
 
     .main-switch-btn {
-      width: 74px;
-      height: 74px;
+      width: clamp(74px, 12vw, 90px);
+      height: clamp(74px, 12vw, 90px);
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), #ff6b8b);
       border: none;
       color: #fff;
-      font-size: 1.8rem;
+      font-size: clamp(1.8rem, 3vw, 2.2rem);
       cursor: pointer;
-      box-shadow: 0 8px 24px var(--accent-glow);
-      transition: 0.2s;
+      box-shadow: 0 8px 26px var(--accent-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
     .main-switch-btn:active { transform: scale(0.92); }
-    .main-switch-btn.playing { background: linear-gradient(135deg, #10b981, #00e676); box-shadow: 0 8px 24px rgba(0, 230, 118, 0.4); }
+    .main-switch-btn.playing { background: linear-gradient(135deg, #10b981, #00e676); box-shadow: 0 8px 26px rgba(0, 230, 118, 0.4); }
 
-    .schedule-ribbon {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-around;
-      text-align: center;
-      font-size: 0.75rem;
-    }
-    .schedule-ribbon strong { display: block; font-size: 0.88rem; color: #fff; margin-bottom: 2px; }
-
-    .section-title { font-size: 0.95rem; font-weight: 700; margin: 20px 0 12px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.8px; }
-    .track-list { display: flex; flex-direction: column; gap: 8px; }
-    .track-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-size: 0.88rem;
-    }
-    .track-item.current { border-color: var(--accent); background: rgba(255, 51, 102, 0.08); }
-    .track-num {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.06);
-      display: flex;
+    /* Account & Upload Modal / Drawer */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; animation: modalFade 0.25s ease-out; }
+    @keyframes modalFade { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+    .modal-card {
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.8);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--subtext);
+      font-size: 1.3rem;
+      cursor: pointer;
     }
 
-    /* Forms */
-    .auth-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 22px;
-    }
     .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.78rem; color: var(--subtext); margin-bottom: 6px; font-weight: 600; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--subtext); margin-bottom: 6px; font-weight: 600; }
     .form-group input, .form-group textarea {
       width: 100%;
       padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--card-border);
       color: #fff;
       font-size: 0.9rem;
       outline: none;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
     .btn {
       width: 100%;
       padding: 13px;
@@ -212,7 +253,6 @@
     }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-secondary { background: rgba(255, 255, 255, 0.08); color: #fff; margin-top: 8px; }
-    .btn:active { transform: scale(0.97); }
 
     /* Custom Mobile File Picker */
     .file-dropzone {
@@ -247,12 +287,11 @@
     .file-meta-size { font-size: 0.72rem; color: var(--subtext); }
     .remove-file-btn { background: none; border: none; color: #ff5252; font-size: 1rem; cursor: pointer; padding: 4px 8px; }
 
-    /* User Profile */
     .profile-card {
-      background: var(--card-bg);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 18px;
+      border-radius: 18px;
+      padding: 16px;
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
@@ -270,47 +309,17 @@
     .tag-approved { background: rgba(0, 230, 118, 0.2); color: var(--green); }
     .tag-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
 
-    /* Navigation */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: 62px;
-      background: rgba(13, 17, 23, 0.95);
-      border-top: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      backdrop-filter: blur(16px);
-      z-index: 50;
-    }
-    .nav-btn {
-      background: none;
-      border: none;
-      color: var(--subtext);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      cursor: pointer;
-      flex: 1;
-    }
-    .nav-btn.active { color: var(--accent); }
     .toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.88);
+      background: rgba(0,0,0,0.9);
       border: 1px solid var(--accent);
       padding: 10px 18px;
       border-radius: 25px;
-      font-size: 0.8rem;
-      z-index: 100;
+      font-size: 0.82rem;
+      z-index: 200;
       display: none;
     }
   </style>
@@ -320,25 +329,37 @@
 <div id="toast" class="toast"></div>
 
 <div class="app-shell">
+  <!-- Top Navigation Header -->
   <header>
-    <div class="logo">
-      <i class="fa-solid fa-tower-broadcast"></i>
-      <span id="stationNameDisplay">Community Voice FM</span>
+    <div class="logo-group">
+      <div class="logo">
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span id="stationNameDisplay">Community Voice FM</span>
+      </div>
+      <div class="session-badge">
+        <span class="pulse-dot"></span>
+        <span>ON AIR 24/7</span>
+      </div>
     </div>
-    <div id="sessionIndicator" class="session-badge">
-      <span class="pulse-dot"></span>
-      <span id="sessionStatusText">Checking...</span>
+
+    <div class="header-actions">
+      <!-- PWA Install Button -->
+      <button id="pwaInstallBtn" class="btn-header btn-install" onclick="installPWA()">
+        <i class="fa-solid fa-download"></i>
+        <span>Install App</span>
+      </button>
+
+      <!-- Account & Upload Trigger Button -->
+      <button class="btn-header" onclick="openAccountModal()">
+        <i class="fa-solid fa-user-circle"></i>
+        <span id="headerAccountLabel">Account & Upload</span>
+      </button>
     </div>
   </header>
 
+  <!-- Main View -->
   <main>
-    <!-- TAB 1: RADIO PLAYER -->
-    <div id="radioTab" class="page-tab active">
-      <div class="schedule-ribbon">
-        <div><strong>Morning Live</strong>05:00 AM – 11:00 AM</div>
-        <div><strong>Evening Live</strong>05:00 PM – 11:00 PM</div>
-      </div>
-
+    <div class="content-wrapper">
       <div class="tuner-card">
         <div class="vinyl-wrapper">
           <div id="vinyl" class="vinyl">
@@ -347,136 +368,119 @@
         </div>
 
         <div class="track-title" id="trackTitleDisplay">Radio Off</div>
-        <div class="track-contributor" id="trackContributorDisplay">Tap switch to start broadcast</div>
-        <div class="track-desc" id="trackDescDisplay">Continuous community radio sequence. Zero delays between tracks.</div>
+        <div class="track-contributor" id="trackContributorDisplay">Tap switch to start 24/7 broadcast</div>
+        <div class="track-desc" id="trackDescDisplay">Continuous live community radio streaming without delays.</div>
 
         <button id="radioPowerBtn" class="main-switch-btn" onclick="toggleRadio()">
           <i class="fa-solid fa-power-off"></i>
         </button>
       </div>
-
-      <div class="section-title">Broadcast Sequence</div>
-      <div class="track-list" id="trackQueueList">
-        <div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">Loading sequence...</div>
-      </div>
-    </div>
-
-    <!-- TAB 2: COMBINED ACCOUNT & UPLOAD HUB -->
-    <div id="accountTab" class="page-tab">
-      
-      <div id="authGuestBox">
-        <div class="auth-card" id="loginFormBox">
-          <h3 style="margin-bottom:14px;">Member Login</h3>
-          <div class="form-group">
-            <label>Mobile Number</label>
-            <input type="tel" id="loginMobile" placeholder="e.g. 9876543210">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="loginPass" placeholder="Enter password">
-          </div>
-          <button class="btn btn-primary" onclick="submitLogin()">Sign In</button>
-          <button class="btn btn-secondary" onclick="toggleAuthMode('register')">Create New Account</button>
-        </div>
-
-        <div class="auth-card" id="registerFormBox" style="display:none;">
-          <h3 style="margin-bottom:14px;">Register Contributor</h3>
-          <div class="form-group">
-            <label>Username (Displayed on Radio)</label>
-            <input type="text" id="regUsername" placeholder="e.g. RJ Rajesh">
-          </div>
-          <div class="form-group">
-            <label>Mobile Number</label>
-            <input type="tel" id="regMobile" placeholder="e.g. 9876543210">
-          </div>
-          <div class="form-group">
-            <label>Unique Password</label>
-            <input type="password" id="regPass" placeholder="Create password">
-          </div>
-          <button class="btn btn-primary" onclick="submitRegister()">Register Now</button>
-          <button class="btn btn-secondary" onclick="toggleAuthMode('login')">Already have an account?</button>
-        </div>
-      </div>
-
-      <div id="authMemberBox" style="display:none;">
-        <div class="profile-card">
-          <div>
-            <div style="font-weight:700; font-size:1.1rem;" id="profUsername">User</div>
-            <div style="color:var(--subtext); font-size:0.8rem;" id="profMobile">+91-0000000000</div>
-            <div id="profStatusBadge" class="user-tag tag-pending">Pending Approval</div>
-          </div>
-          <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:0.75rem;" onclick="logout()">Logout</button>
-        </div>
-
-        <div id="uploadGateBox">
-          <div id="uploadAllowedSection" class="auth-card" style="display:none; margin-bottom: 20px;">
-            <h3 style="margin-bottom:6px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--cyan); margin-right:6px;"></i>Upload to Radio</h3>
-            <p style="font-size:0.78rem; color:var(--subtext); margin-bottom:14px;">Files will automatically enter the Community Radio sequential loop.</p>
-            
-            <div class="form-group">
-              <label>Audio Title</label>
-              <input type="text" id="audioTitle" placeholder="e.g. Morning Folk Tunes">
-            </div>
-            <div class="form-group">
-              <label>Audio Description</label>
-              <textarea id="audioDesc" rows="2" placeholder="Brief info about this audio..."></textarea>
-            </div>
-            
-            <div class="form-group">
-              <label>Audio File (.mp3, .m4a, .wav, .aac)</label>
-              <input type="file" id="audioFileInput" accept=".mp3,audio/mpeg,audio/mp3,audio/*,.m4a,.wav,.aac,.ogg,*" style="display:none;" onchange="handleFileSelected(this)">
-              
-              <div class="file-dropzone" id="fileDropZone" onclick="triggerFilePicker()">
-                <i class="fa-solid fa-file-audio"></i>
-                <div class="file-dropzone-text">Tap to Select MP3 Audio</div>
-                <div class="file-dropzone-sub">Supports MP3, M4A, WAV from Downloads or Storage</div>
-              </div>
-
-              <div class="selected-file-card" id="selectedFileCard">
-                <div class="selected-file-info">
-                  <i class="fa-solid fa-circle-check"></i>
-                  <div>
-                    <div class="file-meta-name" id="fileMetaName">track.mp3</div>
-                    <div class="file-meta-size" id="fileMetaSize">0.0 MB • Ready</div>
-                  </div>
-                </div>
-                <button type="button" class="remove-file-btn" onclick="clearSelectedFile(event)">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-            </div>
-
-            <button class="btn btn-primary" id="uploadBtn" onclick="uploadAudio()">Upload Audio File</button>
-          </div>
-
-          <div id="uploadLockedSection" class="auth-card" style="text-align:center; padding: 24px 16px; margin-bottom:20px; display:none;">
-            <i class="fa-solid fa-clock-rotate-left" style="font-size:2.2rem; color:#ffc107; margin-bottom:12px;"></i>
-            <h4>Contributor Approval Pending</h4>
-            <p style="font-size:0.8rem; color:var(--subtext); margin-top:8px;">
-              You can listen to all live radio broadcasts freely. Audio upload privileges will be unlocked once approved by the station administrator.
-            </p>
-          </div>
-        </div>
-
-        <div class="section-title">My Contributions</div>
-        <div class="track-list" id="myUploadsList">
-          <div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No audio uploaded yet.</div>
-        </div>
-      </div>
-
     </div>
   </main>
+</div>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn active" onclick="switchTab('radioTab', this)">
-      <i class="fa-solid fa-radio"></i>
-      <span>Radio</span>
-    </button>
-    <button class="nav-btn" onclick="switchTab('accountTab', this)">
-      <i class="fa-solid fa-user-circle"></i>
-      <span>Account & Upload</span>
-    </button>
-  </nav>
+<!-- Combined Account & Upload Modal -->
+<div id="accountModal" class="modal-overlay" onclick="closeAccountModal(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modalTitle"><i class="fa-solid fa-user-astronaut" style="color:var(--accent); margin-right:8px;"></i>Contributor Portal</h3>
+      <button class="modal-close" onclick="closeAccountModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Guest: Login / Register -->
+    <div id="authGuestBox">
+      <div id="loginFormBox">
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="loginMobile" placeholder="e.g. 9876543210">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="Enter password">
+        </div>
+        <button class="btn btn-primary" onclick="submitLogin()">Sign In</button>
+        <button class="btn btn-secondary" onclick="toggleAuthMode('register')">Create New Account</button>
+      </div>
+
+      <div id="registerFormBox" style="display:none;">
+        <div class="form-group">
+          <label>Username (Displayed on Radio)</label>
+          <input type="text" id="regUsername" placeholder="e.g. RJ Rajesh">
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="regMobile" placeholder="e.g. 9876543210">
+        </div>
+        <div class="form-group">
+          <label>Unique Password</label>
+          <input type="password" id="regPass" placeholder="Create password">
+        </div>
+        <button class="btn btn-primary" onclick="submitRegister()">Register Now</button>
+        <button class="btn btn-secondary" onclick="toggleAuthMode('login')">Already have an account?</button>
+      </div>
+    </div>
+
+    <!-- Member: Profile, Upload, User's Tracks -->
+    <div id="authMemberBox" style="display:none;">
+      <div class="profile-card">
+        <div>
+          <div style="font-weight:700; font-size:1.1rem;" id="profUsername">User</div>
+          <div style="color:var(--subtext); font-size:0.8rem;" id="profMobile">+91-0000000000</div>
+          <div id="profStatusBadge" class="user-tag tag-pending">Pending Approval</div>
+        </div>
+        <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:0.75rem;" onclick="logout()">Logout</button>
+      </div>
+
+      <!-- Upload Section -->
+      <div id="uploadGateBox">
+        <div id="uploadAllowedSection" style="display:none; margin-bottom: 20px;">
+          <h4 style="margin-bottom:8px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--cyan); margin-right:6px;"></i>Upload Audio Track</h4>
+          <p style="font-size:0.78rem; color:var(--subtext); margin-bottom:14px;">Audio will be stored in Google Drive and appended to the 24/7 sequence.</p>
+
+          <div class="form-group">
+            <label>Audio Title</label>
+            <input type="text" id="audioTitle" placeholder="e.g. Morning Folk Tunes">
+          </div>
+          <div class="form-group">
+            <label>Audio Description</label>
+            <textarea id="audioDesc" rows="2" placeholder="Brief info about this audio..."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Audio File (.mp3, .m4a, .wav, .aac)</label>
+            <input type="file" id="audioFileInput" accept=".mp3,audio/mpeg,audio/mp3,audio/*,.m4a,.wav,.aac,.ogg,*" style="display:none;" onchange="handleFileSelected(this)">
+            
+            <div class="file-dropzone" id="fileDropZone" onclick="triggerFilePicker()">
+              <i class="fa-solid fa-file-audio"></i>
+              <div class="file-dropzone-text">Tap to Select MP3 Audio</div>
+              <div class="file-dropzone-sub">Supports MP3, M4A, WAV from Downloads or Storage</div>
+            </div>
+
+            <div class="selected-file-card" id="selectedFileCard">
+              <div class="selected-file-info">
+                <i class="fa-solid fa-circle-check"></i>
+                <div>
+                  <div class="file-meta-name" id="fileMetaName">track.mp3</div>
+                  <div class="file-meta-size" id="fileMetaSize">0.0 MB • Ready</div>
+                </div>
+              </div>
+              <button type="button" class="remove-file-btn" onclick="clearSelectedFile(event)"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="uploadBtn" onclick="uploadAudio()">Upload Audio Track</button>
+        </div>
+
+        <div id="uploadLockedSection" style="text-align:center; padding: 20px 14px; margin-bottom:20px; display:none; background:rgba(255,255,255,0.03); border-radius:14px;">
+          <i class="fa-solid fa-clock-rotate-left" style="font-size:2rem; color:#ffc107; margin-bottom:10px;"></i>
+          <h4>Contributor Approval Pending</h4>
+          <p style="font-size:0.8rem; color:var(--subtext); margin-top:8px;">
+            You can listen to all live 24/7 radio broadcasts freely. Upload privileges will unlock once approved by the administrator.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -488,14 +492,32 @@
   let isPlaying = false;
   let currentUser = JSON.parse(localStorage.getItem('cr_user') || 'null');
   let selectedAudioFile = null;
+  let currentSeqVersion = null;
 
-  // In-Memory Audio Cache to prevent reloading delays
   const audioCache = {};
-
-  // Dual HTML5 Players for zero-gap switching
   let activePlayer = new Audio();
   let standbyPlayer = new Audio();
   let isStandbyReady = false;
+
+  // PWA Install Prompt Handler
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('pwaInstallBtn').style.display = 'inline-flex';
+  });
+
+  function installPWA() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          document.getElementById('pwaInstallBtn').style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
+  }
 
   window.addEventListener('load', () => {
     if ('caches' in window) {
@@ -504,9 +526,11 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
-    initScheduleChecker();
     fetchStationData();
     renderAuth();
+
+    // Check every 12 seconds if admin reordered sequence
+    setInterval(checkForSequenceUpdates, 12000);
   });
 
   function showToast(msg) {
@@ -516,72 +540,67 @@
     setTimeout(() => { t.style.display = 'none'; }, 3200);
   }
 
-  function switchTab(tabId, el) {
-    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    el.classList.add('active');
+  function openAccountModal() {
+    document.getElementById('accountModal').classList.add('open');
   }
 
-  function isSessionLive() {
-    const now = new Date();
-    const h = now.getHours();
-    return (h >= 5 && h < 11) || (h >= 17 && h < 23);
-  }
-
-  function initScheduleChecker() {
-    function update() {
-      const live = isSessionLive();
-      const badge = document.getElementById('sessionIndicator');
-      const txt = document.getElementById('sessionStatusText');
-      if (live) {
-        badge.className = "session-badge live";
-        txt.innerText = "ON AIR LIVE";
-      } else {
-        badge.className = "session-badge";
-        txt.innerText = "OFF AIR";
-      }
+  function closeAccountModal(e) {
+    if (!e || e.target === document.getElementById('accountModal')) {
+      document.getElementById('accountModal').classList.remove('open');
     }
-    update();
-    setInterval(update, 30000);
   }
 
+  // Fetch playlist and detect sequence updates from admin
   async function fetchStationData() {
     try {
       const res = await fetch(`${BACKEND_URL}?action=getStationData`);
       const data = await res.json();
       if (data.success) {
         playlist = data.tracks || [];
-        if (data.settings && data.settings.station_name) {
-          document.getElementById('stationNameDisplay').innerText = data.settings.station_name;
+        if (data.settings) {
+          if (data.settings.station_name) {
+            document.getElementById('stationNameDisplay').innerText = data.settings.station_name;
+          }
+          currentSeqVersion = data.settings.seq_version || currentSeqVersion;
         }
-        renderQueue();
-        renderMyUploads();
+        if (isPlaying && playlist.length > 0) {
+          prepareStandbyTrack();
+        }
       }
     } catch (e) {
       console.warn("Backend not reachable or still compiling.");
     }
   }
 
-  function renderQueue() {
-    const box = document.getElementById('trackQueueList');
-    if (!playlist || playlist.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No tracks uploaded yet.</div>`;
-      return;
-    }
-    box.innerHTML = playlist.map((item, idx) => `
-      <div class="track-item ${idx === currentIndex && isPlaying ? 'current' : ''}">
-        <div class="track-num">${item.seq || (idx + 1)}</div>
-        <div style="flex:1; overflow:hidden;">
-          <div style="font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${item.title}</div>
-          <div style="font-size:0.75rem; color:var(--subtext);">by ${item.contributor || 'Community'}</div>
-        </div>
-        <i class="fa-solid fa-volume-high" style="color: ${idx === currentIndex && isPlaying ? 'var(--accent)' : 'transparent'}; font-size:0.8rem;"></i>
-      </div>
-    `).join('');
+  // Polling for live sequence change: Immediately re-starts from beginning if admin reordered
+  async function checkForSequenceUpdates() {
+    try {
+      const res = await fetch(`${BACKEND_URL}?action=getStationData`);
+      const data = await res.json();
+      if (data.success && data.settings && data.settings.seq_version) {
+        if (currentSeqVersion && data.settings.seq_version !== currentSeqVersion) {
+          currentSeqVersion = data.settings.seq_version;
+          playlist = data.tracks || [];
+          showToast("Admin updated broadcast order. Syncing...");
+
+          // Reset loop immediately from beginning of new sequence
+          currentIndex = 0;
+          if (isPlaying) {
+            const track = playlist[0];
+            const audioSource = await resolveTrackAudio(track);
+            activePlayer.src = audioSource;
+            activePlayer.play().then(() => {
+              isStandbyReady = false;
+              prepareStandbyTrack();
+              updateMediaSession();
+              updateTunerUI();
+            });
+          }
+        }
+      }
+    } catch(err) {}
   }
 
-  // Resolves playable audio URI using backend proxy
   async function resolveTrackAudio(track) {
     if (!track) return null;
     if (audioCache[track.fileId]) return audioCache[track.fileId];
@@ -594,28 +613,20 @@
         return data.dataUri;
       }
     } catch(err) {
-      console.warn("Stream proxy fallback to default link");
+      console.warn("Proxy fallback to streamUrl");
     }
     return track.streamUrl;
   }
 
-  // ================= ZERO-GAP REAL RADIO ENGINE =================
+  // ================= ZERO-GAP DUAL BUFFER ENGINE =================
   function setupPlayerEvents(player) {
     player.addEventListener('timeupdate', () => {
-      // Pre-load next track 4 seconds before current ends
       if (player.duration && (player.duration - player.currentTime <= 4) && !isStandbyReady) {
         prepareStandbyTrack();
       }
     });
-
-    player.addEventListener('ended', () => {
-      advanceTrackInstantly();
-    });
-
-    player.addEventListener('error', (e) => {
-      console.warn("Player error, advancing to next audio track");
-      advanceTrackInstantly();
-    });
+    player.addEventListener('ended', () => { advanceTrackInstantly(); });
+    player.addEventListener('error', () => { advanceTrackInstantly(); });
   }
 
   setupPlayerEvents(activePlayer);
@@ -635,14 +646,12 @@
 
   async function advanceTrackInstantly() {
     currentIndex = (currentIndex + 1) % playlist.length;
-    
-    // Swap primary and standby players instantly
     const temp = activePlayer;
     activePlayer = standbyPlayer;
     standbyPlayer = temp;
     isStandbyReady = false;
 
-    if (!activePlayer.src || activePlayer.src === "" || activePlayer.src.includes("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")) {
+    if (!activePlayer.src || activePlayer.src === "" || activePlayer.src.includes("data:audio/wav;base64")) {
       const src = await resolveTrackAudio(playlist[currentIndex]);
       activePlayer.src = src;
     }
@@ -652,7 +661,6 @@
     updateTunerUI();
   }
 
-  // Synchronous Hardware Unlock to Prevent "Audio Playback allowed on user tab" Error
   async function toggleRadio() {
     if (!playlist || playlist.length === 0) {
       showToast("Station playlist is loading or empty.");
@@ -665,12 +673,11 @@
       isPlaying = false;
       updateTunerUI();
     } else {
-      // Immediate synchronous unlock with a silent 1ms audio chunk
-      // This grants permanent audio playback privileges in Safari & Android Chrome
+      // Synchronous hardware unlock to avoid iOS/Android gesture exceptions
       activePlayer.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
       activePlayer.play().catch(() => {});
 
-      showToast("Tuning into Community Radio...");
+      showToast("Connecting to 24/7 Community Radio...");
       const track = playlist[currentIndex];
       const audioSource = await resolveTrackAudio(track);
 
@@ -682,7 +689,6 @@
         updateMediaSession();
         updateTunerUI();
       }).catch(err => {
-        console.error("Playback error:", err);
         showToast("Tap again to activate radio.");
       });
     }
@@ -700,14 +706,13 @@
       vinyl.classList.add('spinning');
       title.innerText = playlist[currentIndex].title;
       contrib.innerText = "Curated by " + (playlist[currentIndex].contributor || "Community Voice");
-      desc.innerText = playlist[currentIndex].description || "Live sequential broadcast";
+      desc.innerText = playlist[currentIndex].description || "Live 24/7 Broadcast";
     } else {
       btn.classList.remove('playing');
       vinyl.classList.remove('spinning');
       title.innerText = "Radio Paused";
       contrib.innerText = "Tap switch to listen";
     }
-    renderQueue();
   }
 
   function updateMediaSession() {
@@ -715,7 +720,7 @@
       navigator.mediaSession.metadata = new MediaMetadata({
         title: playlist[currentIndex].title,
         artist: playlist[currentIndex].contributor || "Community Radio",
-        album: "Community Radio Live",
+        album: "Community Radio 24/7",
         artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3075/3075908.png', sizes: '512x512', type: 'image/png' }]
       });
       navigator.mediaSession.setActionHandler('play', () => toggleRadio());
@@ -724,7 +729,7 @@
     }
   }
 
-  // ================= MOBILE FILE PICKER =================
+  // ================= FILE SELECTION =================
   function triggerFilePicker() {
     document.getElementById('audioFileInput').click();
   }
@@ -823,13 +828,16 @@
   function renderAuth() {
     const guestBox = document.getElementById('authGuestBox');
     const memberBox = document.getElementById('authMemberBox');
+    const headerLabel = document.getElementById('headerAccountLabel');
 
     if (!currentUser) {
       guestBox.style.display = 'block';
       memberBox.style.display = 'none';
+      headerLabel.innerText = "Account & Upload";
     } else {
       guestBox.style.display = 'none';
       memberBox.style.display = 'block';
+      headerLabel.innerText = currentUser.username;
 
       document.getElementById('profUsername').innerText = currentUser.username;
       document.getElementById('profMobile').innerText = currentUser.mobile;
@@ -842,31 +850,7 @@
 
       document.getElementById('uploadAllowedSection').style.display = isApproved ? 'block' : 'none';
       document.getElementById('uploadLockedSection').style.display = isApproved ? 'none' : 'block';
-
-      renderMyUploads();
     }
-  }
-
-  function renderMyUploads() {
-    if (!currentUser) return;
-    const box = document.getElementById('myUploadsList');
-    const mine = playlist.filter(p => p.contributor === currentUser.username);
-
-    if (mine.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding: 18px; color: var(--subtext); font-size: 0.85rem;">No tracks uploaded yet.</div>`;
-      return;
-    }
-
-    box.innerHTML = mine.map(t => `
-      <div class="track-item">
-        <div class="track-num"><i class="fa-solid fa-music"></i></div>
-        <div style="flex:1;">
-          <div style="font-weight:600;">${t.title}</div>
-          <div style="font-size:0.75rem; color:var(--subtext);">${t.description || 'No description'}</div>
-        </div>
-        <span class="user-tag tag-approved">In Sequence</span>
-      </div>
-    `).join('');
   }
 
   async function uploadAudio() {
@@ -876,10 +860,7 @@
 
     if (!title) return showToast("Enter a title for your audio");
     if (!selectedAudioFile) return showToast("Please select an audio file first");
-
-    if (selectedAudioFile.size > 25 * 1024 * 1024) {
-      return showToast("File exceeds max 25MB limit.");
-    }
+    if (selectedAudioFile.size > 25 * 1024 * 1024) return showToast("File exceeds max 25MB limit.");
 
     btn.disabled = true;
     btn.innerText = "Encoding & Uploading to Drive...";
@@ -911,6 +892,7 @@
           document.getElementById('audioDesc').value = "";
           clearSelectedFile();
           fetchStationData();
+          closeAccountModal();
         } else {
           showToast(result.message || "Upload rejected");
         }
@@ -918,7 +900,7 @@
         showToast("Error uploading track.");
       } finally {
         btn.disabled = false;
-        btn.innerText = "Upload Audio File";
+        btn.innerText = "Upload Audio Track";
       }
     };
     reader.readAsDataURL(selectedAudioFile);

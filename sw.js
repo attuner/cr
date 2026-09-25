@@ -1,6 +1,18 @@
-const CACHE_NAME = 'comm-radio-v1';
+const CACHE_NAME = 'comm-radio-v2';
+const STATIC_ASSETS = [
+  './index.html',
+  './admin.html',
+  './manifest.json',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+];
 
-// Automatically clear prior caches on activation
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+  );
+  self.skipWaiting();
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -15,14 +27,11 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
-
-// Network-first strategy to prevent stale caches during live broadcasts
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('google.com') || event.request.url.includes('googleusercontent.com')) {
-    return; // Pass through audio streams & Google backend directly
+  const url = event.request.url;
+  // Always fetch live Google Apps Script and audio streams directly from network
+  if (url.includes('script.google.com') || url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+    return;
   }
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
