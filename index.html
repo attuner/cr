@@ -25,7 +25,7 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -57,7 +57,6 @@
       gap: 10px;
       font-weight: 700;
       font-size: 1.15rem;
-      letter-spacing: 0.5px;
     }
     .logo i { color: var(--accent); font-size: 1.3rem; }
     .session-badge {
@@ -88,7 +87,6 @@
       padding: 24px 20px;
       text-align: center;
       box-shadow: 0 16px 36px rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
       margin-bottom: 20px;
     }
     .vinyl-wrapper {
@@ -140,12 +138,10 @@
       cursor: pointer;
       box-shadow: 0 8px 24px var(--accent-glow);
       transition: 0.2s;
-      outline: none;
     }
     .main-switch-btn:active { transform: scale(0.92); }
     .main-switch-btn.playing { background: linear-gradient(135deg, #10b981, #00e676); box-shadow: 0 8px 24px rgba(0, 230, 118, 0.4); }
 
-    /* Schedule Ribbon */
     .schedule-ribbon {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--card-border);
@@ -159,7 +155,6 @@
     }
     .schedule-ribbon strong { display: block; font-size: 0.88rem; color: #fff; margin-bottom: 2px; }
 
-    /* Queue List */
     .section-title { font-size: 0.95rem; font-weight: 700; margin: 20px 0 12px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.8px; }
     .track-list { display: flex; flex-direction: column; gap: 8px; }
     .track-item {
@@ -191,7 +186,6 @@
       border: 1px solid var(--card-border);
       border-radius: 20px;
       padding: 22px;
-      backdrop-filter: blur(10px);
     }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.78rem; color: var(--subtext); margin-bottom: 6px; font-weight: 600; }
@@ -220,7 +214,40 @@
     .btn-secondary { background: rgba(255, 255, 255, 0.08); color: #fff; margin-top: 8px; }
     .btn:active { transform: scale(0.97); }
 
-    /* User Profile Hub */
+    /* Custom Mobile File Picker */
+    .file-dropzone {
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .file-dropzone i { font-size: 1.8rem; color: var(--cyan); margin-bottom: 4px; }
+    .file-dropzone-text { font-size: 0.85rem; font-weight: 600; color: #fff; }
+    .file-dropzone-sub { font-size: 0.72rem; color: var(--subtext); }
+
+    .selected-file-card {
+      display: none;
+      margin-top: 10px;
+      padding: 12px 14px;
+      background: rgba(0, 230, 118, 0.08);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      border-radius: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .selected-file-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .selected-file-info i { color: var(--green); font-size: 1.2rem; }
+    .file-meta-name { font-size: 0.84rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
+    .file-meta-size { font-size: 0.72rem; color: var(--subtext); }
+    .remove-file-btn { background: none; border: none; color: #ff5252; font-size: 1rem; cursor: pointer; padding: 4px 8px; }
+
+    /* User Profile */
     .profile-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -243,7 +270,7 @@
     .tag-approved { background: rgba(0, 230, 118, 0.2); color: var(--green); }
     .tag-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
 
-    /* Bottom Navigation */
+    /* Navigation */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -272,14 +299,13 @@
       cursor: pointer;
       flex: 1;
     }
-    .nav-btn i { font-size: 1.15rem; }
     .nav-btn.active { color: var(--accent); }
     .toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.88);
       border: 1px solid var(--accent);
       padding: 10px 18px;
       border-radius: 25px;
@@ -294,7 +320,6 @@
 <div id="toast" class="toast"></div>
 
 <div class="app-shell">
-  <!-- Header -->
   <header>
     <div class="logo">
       <i class="fa-solid fa-tower-broadcast"></i>
@@ -339,7 +364,6 @@
     <!-- TAB 2: COMBINED ACCOUNT & UPLOAD HUB -->
     <div id="accountTab" class="page-tab">
       
-      <!-- Guest: Register / Login -->
       <div id="authGuestBox">
         <div class="auth-card" id="loginFormBox">
           <h3 style="margin-bottom:14px;">Member Login</h3>
@@ -374,7 +398,6 @@
         </div>
       </div>
 
-      <!-- Logged-in Dashboard -->
       <div id="authMemberBox" style="display:none;">
         <div class="profile-card">
           <div>
@@ -385,12 +408,10 @@
           <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:0.75rem;" onclick="logout()">Logout</button>
         </div>
 
-        <!-- Contributor Upload Section -->
         <div id="uploadGateBox">
-          <!-- Shown if approved -->
           <div id="uploadAllowedSection" class="auth-card" style="display:none; margin-bottom: 20px;">
             <h3 style="margin-bottom:6px;"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--cyan); margin-right:6px;"></i>Upload to Radio</h3>
-            <p style="font-size:0.78rem; color:var(--subtext); margin-bottom:14px;">Files are automatically placed in the Community Radio sequence.</p>
+            <p style="font-size:0.78rem; color:var(--subtext); margin-bottom:14px;">Files will automatically enter the Community Radio sequential loop.</p>
             
             <div class="form-group">
               <label>Audio Title</label>
@@ -400,14 +421,34 @@
               <label>Audio Description</label>
               <textarea id="audioDesc" rows="2" placeholder="Brief info about this audio..."></textarea>
             </div>
+            
             <div class="form-group">
-              <label>Audio File (.mp3, .m4a, .aac, .wav)</label>
-              <input type="file" id="audioFileInput" accept="audio/*">
+              <label>Audio File (.mp3, .m4a, .wav, .aac)</label>
+              <input type="file" id="audioFileInput" accept=".mp3,audio/mpeg,audio/mp3,audio/*,.m4a,.wav,.aac,.ogg,*" style="display:none;" onchange="handleFileSelected(this)">
+              
+              <div class="file-dropzone" id="fileDropZone" onclick="triggerFilePicker()">
+                <i class="fa-solid fa-file-audio"></i>
+                <div class="file-dropzone-text">Tap to Select MP3 Audio</div>
+                <div class="file-dropzone-sub">Supports MP3, M4A, WAV from Downloads or Storage</div>
+              </div>
+
+              <div class="selected-file-card" id="selectedFileCard">
+                <div class="selected-file-info">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <div>
+                    <div class="file-meta-name" id="fileMetaName">track.mp3</div>
+                    <div class="file-meta-size" id="fileMetaSize">0.0 MB • Ready</div>
+                  </div>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="clearSelectedFile(event)">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
             </div>
+
             <button class="btn btn-primary" id="uploadBtn" onclick="uploadAudio()">Upload Audio File</button>
           </div>
 
-          <!-- Shown if pending -->
           <div id="uploadLockedSection" class="auth-card" style="text-align:center; padding: 24px 16px; margin-bottom:20px; display:none;">
             <i class="fa-solid fa-clock-rotate-left" style="font-size:2.2rem; color:#ffc107; margin-bottom:12px;"></i>
             <h4>Contributor Approval Pending</h4>
@@ -417,7 +458,6 @@
           </div>
         </div>
 
-        <!-- My Uploaded Tracks -->
         <div class="section-title">My Contributions</div>
         <div class="track-list" id="myUploadsList">
           <div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No audio uploaded yet.</div>
@@ -427,7 +467,6 @@
     </div>
   </main>
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <button class="nav-btn active" onclick="switchTab('radioTab', this)">
       <i class="fa-solid fa-radio"></i>
@@ -444,18 +483,20 @@
   // ================= CONFIGURATION =================
   const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFH6Rd-tyVlWjX96eJu-y2HnOy7qKvZlt96pTzAIipv0k0Oo0yNUDrS8ecUlOu-y2O-g/exec";
 
-  // State
   let playlist = [];
   let currentIndex = 0;
   let isPlaying = false;
   let currentUser = JSON.parse(localStorage.getItem('cr_user') || 'null');
+  let selectedAudioFile = null;
 
-  // Dual Audio Player for Instant, Zero-Gap Real Radio Experience
+  // In-Memory Audio Cache to prevent reloading delays
+  const audioCache = {};
+
+  // Dual HTML5 Players for zero-gap switching
   let activePlayer = new Audio();
   let standbyPlayer = new Audio();
   let isStandbyReady = false;
 
-  // Clear session cache on initial load
   window.addEventListener('load', () => {
     if ('caches' in window) {
       caches.keys().then(names => names.forEach(name => caches.delete(name)));
@@ -468,7 +509,6 @@
     renderAuth();
   });
 
-  // UI Toast
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.innerText = msg;
@@ -476,7 +516,6 @@
     setTimeout(() => { t.style.display = 'none'; }, 3200);
   }
 
-  // Navigation
   function switchTab(tabId, el) {
     document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -484,7 +523,6 @@
     el.classList.add('active');
   }
 
-  // Schedule Checker (5 AM - 11 AM & 5 PM - 11 PM)
   function isSessionLive() {
     const now = new Date();
     const h = now.getHours();
@@ -508,7 +546,6 @@
     setInterval(update, 30000);
   }
 
-  // Fetch Station Playlist & Sequence
   async function fetchStationData() {
     try {
       const res = await fetch(`${BACKEND_URL}?action=getStationData`);
@@ -520,19 +557,16 @@
         }
         renderQueue();
         renderMyUploads();
-        if (isPlaying && playlist.length > 0) {
-          prepareStandbyTrack();
-        }
       }
     } catch (e) {
-      console.warn("Backend not reached yet or offline.");
+      console.warn("Backend not reachable or still compiling.");
     }
   }
 
   function renderQueue() {
     const box = document.getElementById('trackQueueList');
     if (!playlist || playlist.length === 0) {
-      box.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No audio sequences found in Community Radio folder.</div>`;
+      box.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--subtext); font-size: 0.85rem;">No tracks uploaded yet.</div>`;
       return;
     }
     box.innerHTML = playlist.map((item, idx) => `
@@ -547,10 +581,28 @@
     `).join('');
   }
 
-  // ================= ZERO-GAP DUAL-BUFFER ENGINE =================
+  // Resolves playable audio URI using backend proxy
+  async function resolveTrackAudio(track) {
+    if (!track) return null;
+    if (audioCache[track.fileId]) return audioCache[track.fileId];
+
+    try {
+      const res = await fetch(`${BACKEND_URL}?action=streamAudio&fileId=${encodeURIComponent(track.fileId)}`);
+      const data = await res.json();
+      if (data.success && data.dataUri) {
+        audioCache[track.fileId] = data.dataUri;
+        return data.dataUri;
+      }
+    } catch(err) {
+      console.warn("Stream proxy fallback to default link");
+    }
+    return track.streamUrl;
+  }
+
+  // ================= ZERO-GAP REAL RADIO ENGINE =================
   function setupPlayerEvents(player) {
     player.addEventListener('timeupdate', () => {
-      // Pre-buffer standby track 4 seconds before current ends
+      // Pre-load next track 4 seconds before current ends
       if (player.duration && (player.duration - player.currentTime <= 4) && !isStandbyReady) {
         prepareStandbyTrack();
       }
@@ -560,7 +612,8 @@
       advanceTrackInstantly();
     });
 
-    player.addEventListener('error', () => {
+    player.addEventListener('error', (e) => {
+      console.warn("Player error, advancing to next audio track");
       advanceTrackInstantly();
     });
   }
@@ -568,45 +621,60 @@
   setupPlayerEvents(activePlayer);
   setupPlayerEvents(standbyPlayer);
 
-  function prepareStandbyTrack() {
+  async function prepareStandbyTrack() {
     if (playlist.length <= 1) return;
     const nextIdx = (currentIndex + 1) % playlist.length;
-    standbyPlayer.src = playlist[nextIdx].streamUrl;
-    standbyPlayer.load();
-    isStandbyReady = true;
+    const nextTrack = playlist[nextIdx];
+    const src = await resolveTrackAudio(nextTrack);
+    if (src) {
+      standbyPlayer.src = src;
+      standbyPlayer.load();
+      isStandbyReady = true;
+    }
   }
 
-  function advanceTrackInstantly() {
+  async function advanceTrackInstantly() {
     currentIndex = (currentIndex + 1) % playlist.length;
     
-    // Swap pointers
+    // Swap primary and standby players instantly
     const temp = activePlayer;
     activePlayer = standbyPlayer;
     standbyPlayer = temp;
     isStandbyReady = false;
 
-    if (!activePlayer.src || activePlayer.src === "") {
-      activePlayer.src = playlist[currentIndex].streamUrl;
+    if (!activePlayer.src || activePlayer.src === "" || activePlayer.src.includes("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")) {
+      const src = await resolveTrackAudio(playlist[currentIndex]);
+      activePlayer.src = src;
     }
 
-    activePlayer.play().catch(() => {});
+    activePlayer.play().catch(e => console.warn(e));
     updateMediaSession();
     updateTunerUI();
-    renderQueue();
   }
 
-  function toggleRadio() {
+  // Synchronous Hardware Unlock to Prevent "Audio Playback allowed on user tab" Error
+  async function toggleRadio() {
     if (!playlist || playlist.length === 0) {
-      showToast("Playlist is loading or empty.");
+      showToast("Station playlist is loading or empty.");
       return;
     }
 
     if (isPlaying) {
       activePlayer.pause();
+      standbyPlayer.pause();
       isPlaying = false;
       updateTunerUI();
     } else {
-      activePlayer.src = playlist[currentIndex].streamUrl;
+      // Immediate synchronous unlock with a silent 1ms audio chunk
+      // This grants permanent audio playback privileges in Safari & Android Chrome
+      activePlayer.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+      activePlayer.play().catch(() => {});
+
+      showToast("Tuning into Community Radio...");
+      const track = playlist[currentIndex];
+      const audioSource = await resolveTrackAudio(track);
+
+      activePlayer.src = audioSource;
       activePlayer.play().then(() => {
         isPlaying = true;
         isStandbyReady = false;
@@ -614,7 +682,8 @@
         updateMediaSession();
         updateTunerUI();
       }).catch(err => {
-        showToast("Audio playback allowed on user tap.");
+        console.error("Playback error:", err);
+        showToast("Tap again to activate radio.");
       });
     }
   }
@@ -641,13 +710,12 @@
     renderQueue();
   }
 
-  // Lock-screen background playback support
   function updateMediaSession() {
     if ('mediaSession' in navigator && playlist[currentIndex]) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: playlist[currentIndex].title,
         artist: playlist[currentIndex].contributor || "Community Radio",
-        album: "Community Radio Broadcast",
+        album: "Community Radio Live",
         artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3075/3075908.png', sizes: '512x512', type: 'image/png' }]
       });
       navigator.mediaSession.setActionHandler('play', () => toggleRadio());
@@ -656,7 +724,39 @@
     }
   }
 
-  // ================= COMBINED ACCOUNT & UPLOADS =================
+  // ================= MOBILE FILE PICKER =================
+  function triggerFilePicker() {
+    document.getElementById('audioFileInput').click();
+  }
+
+  function handleFileSelected(input) {
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      selectedAudioFile = file;
+
+      document.getElementById('fileMetaName').innerText = file.name;
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      document.getElementById('fileMetaSize').innerText = `${sizeMB} MB • Selected`;
+      
+      document.getElementById('fileDropZone').style.display = 'none';
+      document.getElementById('selectedFileCard').style.display = 'flex';
+      
+      const titleInput = document.getElementById('audioTitle');
+      if (!titleInput.value.trim()) {
+        titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+      }
+    }
+  }
+
+  function clearSelectedFile(e) {
+    if (e) e.stopPropagation();
+    selectedAudioFile = null;
+    document.getElementById('audioFileInput').value = "";
+    document.getElementById('selectedFileCard').style.display = 'none';
+    document.getElementById('fileDropZone').style.display = 'flex';
+  }
+
+  // ================= AUTHENTICATION & UPLOADS =================
   function toggleAuthMode(mode) {
     document.getElementById('loginFormBox').style.display = mode === 'login' ? 'block' : 'none';
     document.getElementById('registerFormBox').style.display = mode === 'register' ? 'block' : 'none';
@@ -667,7 +767,7 @@
     const mobile = document.getElementById('regMobile').value.trim();
     const password = document.getElementById('regPass').value.trim();
 
-    if (!username || !mobile || !password) return showToast("Please fill all registration fields.");
+    if (!username || !mobile || !password) return showToast("Please fill all fields.");
 
     showToast("Registering account...");
     try {
@@ -705,7 +805,7 @@
         currentUser = data.user;
         localStorage.setItem('cr_user', JSON.stringify(currentUser));
         renderAuth();
-        showToast("Welcome back, " + currentUser.username);
+        showToast("Welcome, " + currentUser.username);
       } else {
         showToast(data.message || "Login failed");
       }
@@ -769,18 +869,17 @@
     `).join('');
   }
 
-  // Convert File to Base64 and Upload to Google Drive
   async function uploadAudio() {
     const title = document.getElementById('audioTitle').value.trim();
     const description = document.getElementById('audioDesc').value.trim();
-    const fileInput = document.getElementById('audioFileInput');
     const btn = document.getElementById('uploadBtn');
 
     if (!title) return showToast("Enter a title for your audio");
-    if (!fileInput.files || fileInput.files.length === 0) return showToast("Select an audio file");
+    if (!selectedAudioFile) return showToast("Please select an audio file first");
 
-    const file = fileInput.files[0];
-    if (file.size > 25 * 1024 * 1024) return showToast("File exceeds max 25MB limit.");
+    if (selectedAudioFile.size > 25 * 1024 * 1024) {
+      return showToast("File exceeds max 25MB limit.");
+    }
 
     btn.disabled = true;
     btn.innerText = "Encoding & Uploading to Drive...";
@@ -795,8 +894,8 @@
           username: currentUser.username,
           title,
           description,
-          fileName: file.name,
-          mimeType: file.type,
+          fileName: selectedAudioFile.name,
+          mimeType: selectedAudioFile.type || "audio/mpeg",
           base64File: base64Data
         };
 
@@ -810,7 +909,7 @@
           showToast("Upload Successful!");
           document.getElementById('audioTitle').value = "";
           document.getElementById('audioDesc').value = "";
-          fileInput.value = "";
+          clearSelectedFile();
           fetchStationData();
         } else {
           showToast(result.message || "Upload rejected");
@@ -822,7 +921,7 @@
         btn.innerText = "Upload Audio File";
       }
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(selectedAudioFile);
   }
 </script>
 
