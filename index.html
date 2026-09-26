@@ -739,7 +739,7 @@
       const data = await res.json();
       if (data.success && typeof data.activeCount === 'number') {
         const count = isPlaying ? Math.max(1, data.activeCount) : data.activeCount;
-        document.getElementById('liveListenerCountDisplay').innerText = `Listeners: ${count}`;
+        document.getElementById('liveListenerCountDisplay').innerText = `: ${count}`;
       }
     } catch(err) {}
   }
@@ -812,7 +812,7 @@
         }
         if (typeof data.liveListenersCount === 'number') {
           const count = isPlaying ? Math.max(1, data.liveListenersCount) : data.liveListenersCount;
-          document.getElementById('liveListenerCountDisplay').innerText = `Listeners: ${count}`;
+          document.getElementById('liveListenerCountDisplay').innerText = `: ${count}`;
         }
 
         activePlaylist = resolveCurrentPlaylist();
@@ -862,7 +862,7 @@
       if (data.success && data.settings) {
         if (typeof data.liveListenersCount === 'number') {
           const count = isPlaying ? Math.max(1, data.liveListenersCount) : data.liveListenersCount;
-          document.getElementById('liveListenerCountDisplay').innerText = `Listeners: ${count}`;
+          document.getElementById('liveListenerCountDisplay').innerText = `: ${count}`;
         }
 
         if (data.settings.push_version && data.settings.push_version !== lastPushVersion) {
