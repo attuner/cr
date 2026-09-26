@@ -68,6 +68,7 @@
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-green { background: var(--green); color: #000; }
     .btn-danger { background: #e63946; color: #fff; }
+    .btn-push { background: linear-gradient(135deg, #00d2ff, #0077ff); color: #fff; }
     .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
 
     .table-responsive { width: 100%; overflow-x: auto; }
@@ -83,32 +84,30 @@
       border-bottom: 1px solid var(--border);
       gap: 12px;
     }
-    .track-seq-btns { display: flex; gap: 6px; }
-    .track-seq-btns button {
-      background: #21262d;
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .track-seq-btns button:hover { background: var(--accent); }
 
-    /* Hourly slot list box */
     .slot-item {
       background: rgba(0,0,0,0.25);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
     .slot-header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--cyan);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .slot-name-input {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      width: 220px;
     }
     .slot-track-tag {
       display: inline-flex;
@@ -160,14 +159,14 @@
 
   <div id="adminDashboard" style="display:none;">
     
-    <!-- 2) LIVE ONLINE LISTENERS LIST DETAILS -->
+    <!-- LIVE ONLINE LISTENERS -->
     <div class="panel">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2><i class="fa-solid fa-tower-broadcast" style="color:var(--green);"></i> Live Online Listeners Details</h2>
         <button class="btn btn-sm" style="background:#21262d; color:#fff;" onclick="refreshAdminData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
       <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
-        Real-time details of users and guests currently connected to the radio broadcast.
+        Real-time list of listeners currently streaming live broadcasts.
       </p>
 
       <div class="table-responsive">
@@ -187,17 +186,17 @@
       </div>
     </div>
 
-    <!-- 4) HOURLY BROADCAST SLOTS SCHEDULER (5 AM to 11 PM) -->
+    <!-- 1 & 4) NAMED HOURLY SLOTS SCHEDULER (5 AM - 11 PM) -->
     <div class="panel">
       <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-        <h2><i class="fa-solid fa-clock" style="color:var(--cyan);"></i> Hourly Slots Scheduler (5 AM – 11 PM)</h2>
-        <button class="btn btn-primary btn-sm" onclick="saveHourlySlots()"><i class="fa-solid fa-floppy-disk"></i> Save Hourly Slots</button>
+        <h2><i class="fa-solid fa-clock" style="color:var(--cyan);"></i> Named Hourly Slots (5 AM – 11 PM)</h2>
+        <button class="btn btn-primary btn-sm" onclick="saveHourlySlots()"><i class="fa-solid fa-floppy-disk"></i> Save Schedule & Names</button>
       </div>
       <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
-        Select an hourly slot to add tracks. At the start of each hour, tracks assigned to that hour will begin playing immediately in this sequence to all online listeners. Unscheduled hours will play all audios by default serial order.
+        Give custom names to every hourly slot and attach tracks. The names display on the listener radio schedule. If tracks run under 60 minutes or the slot is empty, audio will play randomly from the total library.
       </p>
 
-      <!-- Slot Assign Form -->
+      <!-- Add Track to Slot Form -->
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px;">
         <div class="form-group">
           <label>Select Hourly Slot</label>
@@ -235,17 +234,14 @@
       <div id="hourlySlotsDisplay"></div>
     </div>
 
-    <!-- AUDIO SEQUENCE & REORDERING -->
+    <!-- 3 & 5) CHRONOLOGICAL LIBRARY & INSTANT PUSH AUDIO -->
     <div class="panel">
-      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-        <h2><i class="fa-solid fa-list-ol"></i> Default Serial Sequence Manager</h2>
-        <button class="btn btn-primary btn-sm" onclick="saveNewSequence()"><i class="fa-solid fa-floppy-disk"></i> Save Order to Sheet</button>
-      </div>
+      <h2><i class="fa-solid fa-list" style="color:var(--accent);"></i> Chronological Audio Library & Instant Push</h2>
       <p style="font-size:0.8rem; color:var(--sub); margin-bottom:16px;">
-        This sequence plays automatically during hours without an assigned slot. When saved, all active radios immediately sync and play from Track #1.
+        All uploaded audios are listed chronologically by upload date. Click <strong><i class="fa-solid fa-bolt"></i> Push Now</strong> on any track to instantly interrupt and play that track live on all listeners' radios.
       </p>
 
-      <div id="sequenceList">Loading tracks...</div>
+      <div id="chronologicalList">Loading library...</div>
     </div>
 
     <!-- CONTRIBUTOR APPROVALS -->
@@ -268,7 +264,7 @@
       </div>
     </div>
 
-    <!-- SETTINGS -->
+    <!-- STATION SETTINGS -->
     <div class="panel">
       <h2><i class="fa-solid fa-gear"></i> Broadcast Settings</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
@@ -277,8 +273,8 @@
           <input type="text" id="cfgStationName" value="Community Voice FM">
         </div>
         <div class="form-group">
-          <label>Broadcast Schedule</label>
-          <input type="text" value="24/7 Live Continuous + Hourly Schedule" disabled>
+          <label>Broadcast Engine Mode</label>
+          <input type="text" value="Chronological & Random Hourly" disabled>
         </div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Settings</button>
@@ -294,7 +290,7 @@
   let adminPasscode = "";
   let tracks = [];
   let users = [];
-  let hourlySchedules = {}; // { "5": [fileId1, ...], ... }
+  let hourlySchedules = {}; // { "5": { name: "...", trackIds: [] } }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -320,13 +316,12 @@
         if (data.settings && data.settings.station_name) {
           document.getElementById('cfgStationName').value = data.settings.station_name;
         }
-        renderTracks();
+        renderChronologicalTracks();
         renderUsers();
         renderLiveListeners(data.activeListeners || []);
         renderHourlySlotsUI();
         populateTrackSelector();
 
-        // Refresh admin data every 15 seconds
         setInterval(refreshAdminData, 15000);
       } else {
         showToast(data.message || "Invalid Passcode");
@@ -347,7 +342,6 @@
     } catch(e) {}
   }
 
-  // 2) Render Live Listeners Details Table
   function renderLiveListeners(listeners) {
     const tbody = document.getElementById('liveListenersTableBody');
     if (!listeners || listeners.length === 0) {
@@ -364,35 +358,37 @@
     `).join('');
   }
 
-  // Populate Dropdown for track assignments
   function populateTrackSelector() {
     const sel = document.getElementById('slotTrackSelector');
     if (tracks.length === 0) {
       sel.innerHTML = `<option value="">No tracks available</option>`;
       return;
     }
-    sel.innerHTML = tracks.map(t => `<option value="${t.fileId}">[#${t.seq}] ${t.title} (${t.contributor || 'Community'})</option>`).join('');
+    sel.innerHTML = tracks.map(t => `<option value="${t.fileId}">${t.title} (${t.contributor || 'Community'})</option>`).join('');
   }
 
-  // 4) Hourly Slots Management (5 AM to 11 PM)
+  // 1) Render Named Hourly Slots UI
   function renderHourlySlotsUI() {
     const container = document.getElementById('hourlySlotsDisplay');
     let html = '';
 
     for (let h = 5; h <= 23; h++) {
-      const list = hourlySchedules[String(h)] || [];
-      const formattedHour = (h % 12 || 12) + (h >= 12 ? ':00 PM' : ':00 AM') + ' - ' + ((h + 1) % 12 || 12) + ((h + 1) >= 12 && (h + 1) < 24 ? ':00 PM' : ':00 AM');
+      const slot = hourlySchedules[String(h)] || { name: "", trackIds: [] };
+      const formattedHour = (h % 12 || 12) + (h >= 12 ? ':00 PM' : ':00 AM') + ' – ' + ((h + 1) % 12 || 12) + ((h + 1) >= 12 && (h + 1) < 24 ? ':00 PM' : ':00 AM');
+      const list = slot.trackIds || [];
 
       html += `
         <div class="slot-item">
           <div class="slot-header">
-            <span><i class="fa-regular fa-clock" style="margin-right:6px;"></i>${formattedHour}</span>
-            <span style="font-size:0.75rem; color:${list.length > 0 ? 'var(--green)' : 'var(--sub)'};">
-              ${list.length > 0 ? list.length + ' Track(s) scheduled' : 'Default serial playback'}
-            </span>
+            <div>
+              <strong style="color:var(--cyan); font-size:0.9rem;"><i class="fa-regular fa-clock" style="margin-right:6px;"></i>${formattedHour}</strong>
+            </div>
+            <div>
+              <input type="text" class="slot-name-input" placeholder="Slot Name (e.g. Folk Hour)" value="${slot.name || ''}" onchange="updateSlotName(${h}, this.value)">
+            </div>
           </div>
           <div>
-            ${list.length === 0 ? '<span style="font-size:0.75rem; color:var(--sub);">No tracks set. All library tracks play sequentially.</span>' : ''}
+            ${list.length === 0 ? '<span style="font-size:0.75rem; color:var(--sub);">Empty slot: audios will play randomly from total library.</span>' : ''}
             ${list.map((fileId, idx) => {
               const trk = tracks.find(t => t.fileId === fileId);
               const title = trk ? trk.title : 'Track (' + fileId + ')';
@@ -410,26 +406,31 @@
     container.innerHTML = html;
   }
 
+  function updateSlotName(hour, name) {
+    if (!hourlySchedules[String(hour)]) hourlySchedules[String(hour)] = { name: "", trackIds: [] };
+    hourlySchedules[String(hour)].name = name;
+  }
+
   function addTrackToSelectedSlot() {
     const hour = document.getElementById('slotHourSelector').value;
     const fileId = document.getElementById('slotTrackSelector').value;
     if (!fileId) return showToast("Select an audio track");
 
-    if (!hourlySchedules[hour]) hourlySchedules[hour] = [];
-    hourlySchedules[hour].push(fileId);
+    if (!hourlySchedules[hour]) hourlySchedules[hour] = { name: "", trackIds: [] };
+    hourlySchedules[hour].trackIds.push(fileId);
     renderHourlySlotsUI();
-    showToast(`Track added to ${hour}:00 slot. Remember to click 'Save Hourly Slots'.`);
+    showToast(`Added track to ${hour}:00 slot.`);
   }
 
   function removeTrackFromSlot(hour, index) {
-    if (hourlySchedules[String(hour)]) {
-      hourlySchedules[String(hour)].splice(index, 1);
+    if (hourlySchedules[String(hour)] && hourlySchedules[String(hour)].trackIds) {
+      hourlySchedules[String(hour)].trackIds.splice(index, 1);
       renderHourlySlotsUI();
     }
   }
 
   async function saveHourlySlots() {
-    showToast("Saving hourly schedules...");
+    showToast("Saving hourly schedules and slot names...");
     try {
       const res = await fetch(BACKEND_URL, {
         method: 'POST',
@@ -442,9 +443,9 @@
     }
   }
 
-  // Track Default Sequence UI
-  function renderTracks() {
-    const box = document.getElementById('sequenceList');
+  // 3 & 5) Render Chronological Tracks & Instant Push
+  function renderChronologicalTracks() {
+    const box = document.getElementById('chronologicalList');
     if (tracks.length === 0) {
       box.innerHTML = `<p style="color:var(--sub); font-size:0.85rem;">No tracks uploaded yet.</p>`;
       return;
@@ -456,43 +457,34 @@
           <div style="overflow:hidden;">
             <div style="font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${t.title}</div>
             <div style="font-size:0.75rem; color:var(--sub); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
-              by ${t.contributor || 'Community'} • ${t.description || 'No description'}
+              by ${t.contributor || 'Community'} • ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Original'}
             </div>
           </div>
         </div>
-        <div style="display:flex; gap:6px; flex-shrink:0;">
-          <div class="track-seq-btns">
-            <button onclick="moveTrack(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i></button>
-            <button onclick="moveTrack(${idx}, 1)" ${idx === tracks.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down"></i></button>
-          </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <!-- 5) Push specific audio instantly to all radios -->
+          <button class="btn btn-push btn-sm" onclick="pushTrackToLive('${t.fileId}', '${t.title.replace(/'/g, "\\'")}')">
+            <i class="fa-solid fa-bolt"></i> Push Now
+          </button>
           <button class="btn btn-danger btn-sm" onclick="deleteTrack('${t.fileId}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
     `).join('');
   }
 
-  function moveTrack(index, direction) {
-    const target = index + direction;
-    if (target < 0 || target >= tracks.length) return;
-    const temp = tracks[index];
-    tracks[index] = tracks[target];
-    tracks[target] = temp;
-    renderTracks();
-    populateTrackSelector();
-  }
-
-  async function saveNewSequence() {
-    const orderedIds = tracks.map(t => t.fileId);
-    showToast("Updating sequence and syncing radios...");
+  // 5) Instant Push Action
+  async function pushTrackToLive(fileId, title) {
+    if (!confirm(`Are you sure you want to push "${title}" immediately to ALL live listeners?`)) return;
+    showToast(`Pushing "${title}" to all radios...`);
     try {
       const res = await fetch(BACKEND_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: "adminReorderTracks", adminKey: adminPasscode, orderedIds })
+        body: JSON.stringify({ action: "adminPushTrack", adminKey: adminPasscode, fileId })
       });
       const data = await res.json();
-      showToast(data.message || "Sequence Saved & Broadcast Reset to Beginning");
+      showToast(data.message || "Pushed successfully!");
     } catch(e) {
-      showToast("Error updating sequence");
+      showToast("Error pushing track");
     }
   }
 
@@ -507,7 +499,7 @@
       const data = await res.json();
       if (data.success) {
         tracks = tracks.filter(t => t.fileId !== fileId);
-        renderTracks();
+        renderChronologicalTracks();
         populateTrackSelector();
         showToast("Track deleted");
       }
