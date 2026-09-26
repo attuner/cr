@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Community Radio</title>
+  <title>The Tuner</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#090d16">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -379,7 +379,7 @@
       </div>
       <div class="badge badge-live">
         <span class="pulse-dot"></span>
-        <span>ON AIR 24/7</span>
+        <span>LIVE</span>
       </div>
       <div class="badge badge-listeners">
         <i class="fa-solid fa-headphones"></i>
@@ -390,17 +390,17 @@
     <div class="header-actions">
       <button class="btn-header" onclick="openScheduleModal()">
         <i class="fa-solid fa-calendar-days" style="color:var(--cyan);"></i>
-        <span>Radio Schedule</span>
+        <span>Schedule</span>
       </button>
 
       <button id="pwaInstallBtn" class="btn-header btn-install" onclick="installPWA()">
         <i class="fa-solid fa-download"></i>
-        <span>Install App</span>
+        <span>Install</span>
       </button>
 
       <button class="btn-header" onclick="openAccountModal()">
         <i class="fa-solid fa-user-circle"></i>
-        <span id="headerAccountLabel">Account & Upload</span>
+        <span id="headerAccountLabel">Login</span>
       </button>
     </div>
   </header>
@@ -414,10 +414,10 @@
           </div>
         </div>
 
-        <div class="track-title" id="trackTitleDisplay">Community Radio Ready</div>
-        <div class="track-contributor" id="trackContributorDisplay">Click switch to toggle 24/7 broadcast</div>
+        <div class="track-title" id="trackTitleDisplay">Radio Ready</div>
+        <div class="track-contributor" id="trackContributorDisplay">Click to Start Playing</div>
         <div class="slot-indicator" id="currentSlotDisplay">Loading Tracks...</div>
-        <div class="track-desc" id="trackDescDisplay">Continuous live community radio streaming without delays.</div>
+        <div class="track-desc" id="trackDescDisplay">Live radio streaming.</div>
 
         <div class="switch-container">
           <div id="stationLoadingPill" class="station-loading-pill">

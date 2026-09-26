@@ -1,6 +1,6 @@
 {
-  "name": "Community Radio Live",
-  "short_name": "CommunityRadio",
+  "name": "The Tuner",
+  "short_name": "Tuner",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -9,13 +9,13 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075908.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075906.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075908.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3075/3075906.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
