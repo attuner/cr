@@ -1,6 +1,6 @@
 /**
  * Community Radio Backend - Google Apps Script
- * Hourly Named Slots + Chronological Sequence + Random Filler + Instant Push
+ * Categorized Audio (Slot Plays vs Random Plays) + Hourly Search & Filter + Landscape Support
  */
 
 const FOLDER_NAME = "Community Radio";
@@ -18,6 +18,7 @@ function doPost(e) {
     else if (action === "adminLogin") response = handleAdminLogin(contents);
     else if (action === "adminUpdateUserStatus") response = handleAdminUpdateUser(contents);
     else if (action === "adminDeleteTrack") response = handleDeleteTrack(contents);
+    else if (action === "adminUpdateTrackCategory") response = handleUpdateTrackCategory(contents);
     else if (action === "adminSaveSettings") response = handleSaveSettings(contents);
     else if (action === "heartbeat") response = handleHeartbeat(contents);
     else if (action === "saveHourlySchedule") response = handleSaveHourlySchedule(contents);
@@ -90,7 +91,8 @@ function getSheets() {
   let tracksSheet = ss.getSheetByName("Tracks");
   if (!tracksSheet) {
     tracksSheet = ss.insertSheet("Tracks");
-    tracksSheet.appendRow(["Seq", "Title", "Description", "Contributor", "FileId", "StreamUrl", "CreatedAt"]);
+    // Column 8 stores Category: "Random plays" or "Slot plays"
+    tracksSheet.appendRow(["Seq", "Title", "Description", "Contributor", "FileId", "StreamUrl", "CreatedAt", "Category"]);
   }
 
   let settingsSheet = ss.getSheetByName("Settings");
@@ -164,7 +166,7 @@ function handleLogin(data) {
 
 // ----------------- AUDIO UPLOAD -----------------
 function handleAudioUpload(data) {
-  const { mobile, username, title, description, base64File, fileName, mimeType } = data;
+  const { mobile, username, title, description, base64File, fileName, mimeType, category } = data;
   const { usersSheet, tracksSheet } = getSheets();
 
   const userRows = usersSheet.getDataRange().getValues();
@@ -189,13 +191,14 @@ function handleAudioUpload(data) {
   const fileId = file.getId();
   const streamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
   const createdAt = new Date().toISOString();
+  const trackCat = (category === "Slot plays") ? "Slot plays" : "Random plays";
 
   const trackRows = tracksSheet.getDataRange().getValues();
-  const nextSeq = trackRows.length; // chronological index
+  const nextSeq = trackRows.length;
 
-  tracksSheet.appendRow([nextSeq, title, description, username, fileId, streamUrl, createdAt]);
+  tracksSheet.appendRow([nextSeq, title, description, username, fileId, streamUrl, createdAt, trackCat]);
 
-  return { success: true, message: "Audio uploaded successfully!", track: { seq: nextSeq, title, description, fileId, streamUrl, createdAt } };
+  return { success: true, message: "Audio uploaded successfully!", track: { seq: nextSeq, title, description, fileId, streamUrl, createdAt, category: trackCat } };
 }
 
 // ----------------- HEARTBEAT & LISTENERS -----------------
@@ -256,7 +259,7 @@ function getActiveListenersList() {
 function handleSaveHourlySchedule(data) {
   if (data.adminKey !== ADMIN_SECRET_KEY) return { success: false, message: "Unauthorized" };
   const { hourlySheet, settingsSheet } = getSheets();
-  const schedules = data.schedules; // { "5": { name: "Morning Vibes", trackIds: [...] }, ... }
+  const schedules = data.schedules;
 
   hourlySheet.clearContents();
   hourlySheet.appendRow(["Hour", "SlotName", "TrackIdsJson"]);
@@ -305,6 +308,21 @@ function handlePushTrack(data) {
   return { success: true, message: "Audio pushed to all live listeners instantly!", pushVersion: pushVer };
 }
 
+// ----------------- UPDATE TRACK CATEGORY -----------------
+function handleUpdateTrackCategory(data) {
+  if (data.adminKey !== ADMIN_SECRET_KEY) return { success: false, message: "Unauthorized" };
+  const { tracksSheet } = getSheets();
+  const rows = tracksSheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][4]).trim() === String(data.fileId).trim()) {
+      tracksSheet.getRange(i + 1, 8).setValue(data.category);
+      return { success: true, message: "Category updated to " + data.category };
+    }
+  }
+  return { success: false, message: "Track not found" };
+}
+
 // ----------------- BROADCAST DATA (Chronological) -----------------
 function getStationData() {
   const { tracksSheet, settingsSheet } = getSheets();
@@ -320,12 +338,12 @@ function getStationData() {
         contributor: trackRows[i][3],
         fileId: trackRows[i][4],
         streamUrl: trackRows[i][5],
-        createdAt: trackRows[i][6] || ""
+        createdAt: trackRows[i][6] || "",
+        category: trackRows[i][7] || "Random plays"
       });
     }
   }
 
-  // 3) Sorted strictly in Chronological order (earliest upload first)
   tracks.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
 
   const settingsRows = settingsSheet.getDataRange().getValues();
