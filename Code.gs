@@ -1,6 +1,6 @@
 /**
  * Community Radio Backend - Google Apps Script
- * Categorized Audio (Slot Plays vs Random Plays) + Hourly Search & Filter + Landscape Support
+ * Audio Approvals Workflow + First-Hour-Debut Gate + Slot vs Random Rotation
  */
 
 const FOLDER_NAME = "Community Radio";
@@ -17,12 +17,14 @@ function doPost(e) {
     else if (action === "uploadAudio") response = handleAudioUpload(contents);
     else if (action === "adminLogin") response = handleAdminLogin(contents);
     else if (action === "adminUpdateUserStatus") response = handleAdminUpdateUser(contents);
+    else if (action === "adminUpdateAudioApproval") response = handleUpdateAudioApproval(contents);
     else if (action === "adminDeleteTrack") response = handleDeleteTrack(contents);
     else if (action === "adminUpdateTrackCategory") response = handleUpdateTrackCategory(contents);
     else if (action === "adminSaveSettings") response = handleSaveSettings(contents);
     else if (action === "heartbeat") response = handleHeartbeat(contents);
     else if (action === "saveHourlySchedule") response = handleSaveHourlySchedule(contents);
     else if (action === "adminPushTrack") response = handlePushTrack(contents);
+    else if (action === "markTrackPlayedInSlot") response = handleMarkTrackPlayedInSlot(contents);
 
     return ContentService.createTextOutput(JSON.stringify(response))
       .setMimeType(ContentService.MimeType.JSON);
@@ -91,15 +93,17 @@ function getSheets() {
   let tracksSheet = ss.getSheetByName("Tracks");
   if (!tracksSheet) {
     tracksSheet = ss.insertSheet("Tracks");
-    // Column 8 stores Category: "Random plays" or "Slot plays"
-    tracksSheet.appendRow(["Seq", "Title", "Description", "Contributor", "FileId", "StreamUrl", "CreatedAt", "Category"]);
+    // Column 8: Category ("Random plays" or "Slot plays")
+    // Column 9: ApprovalStatus ("pending" or "approved")
+    // Column 10: PlayedInSlot ("true" or "false")
+    tracksSheet.appendRow(["Seq", "Title", "Description", "Contributor", "FileId", "StreamUrl", "CreatedAt", "Category", "ApprovalStatus", "PlayedInSlot"]);
   }
 
   let settingsSheet = ss.getSheetByName("Settings");
   if (!settingsSheet) {
     settingsSheet = ss.insertSheet("Settings");
     settingsSheet.appendRow(["Key", "Value"]);
-    settingsSheet.appendRow(["station_name", "Community Voice FM"]);
+    settingsSheet.appendRow(["station_name", "Tuner"]);
     settingsSheet.appendRow(["broadcast_mode", "24/7 Live Broadcast"]);
     settingsSheet.appendRow(["seq_version", String(Date.now())]);
     settingsSheet.appendRow(["pushed_track", ""]);
@@ -192,13 +196,19 @@ function handleAudioUpload(data) {
   const streamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
   const createdAt = new Date().toISOString();
   const trackCat = (category === "Slot plays") ? "Slot plays" : "Random plays";
+  const approvalStatus = "pending"; // Audios require admin approval before broadcast
+  const playedInSlot = "false";     // Must debut in an hourly slot first
 
   const trackRows = tracksSheet.getDataRange().getValues();
   const nextSeq = trackRows.length;
 
-  tracksSheet.appendRow([nextSeq, title, description, username, fileId, streamUrl, createdAt, trackCat]);
+  tracksSheet.appendRow([nextSeq, title, description, username, fileId, streamUrl, createdAt, trackCat, approvalStatus, playedInSlot]);
 
-  return { success: true, message: "Audio uploaded successfully!", track: { seq: nextSeq, title, description, fileId, streamUrl, createdAt, category: trackCat } };
+  return {
+    success: true,
+    message: "Audio uploaded successfully! Pending administrator approval.",
+    track: { seq: nextSeq, title, description, fileId, streamUrl, createdAt, category: trackCat, approvalStatus, playedInSlot: false }
+  };
 }
 
 // ----------------- HEARTBEAT & LISTENERS -----------------
@@ -295,7 +305,34 @@ function getHourlySchedules() {
   return schedules;
 }
 
-// ----------------- INSTANT PUSH AUDIO -----------------
+// ----------------- AUDIO APPROVAL & SLOT DEBUT HANDLERS -----------------
+function handleUpdateAudioApproval(data) {
+  if (data.adminKey !== ADMIN_SECRET_KEY) return { success: false, message: "Unauthorized" };
+  const { tracksSheet } = getSheets();
+  const rows = tracksSheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][4]).trim() === String(data.fileId).trim()) {
+      tracksSheet.getRange(i + 1, 9).setValue(data.status); // "approved" or "pending"
+      return { success: true, message: `Audio approval updated to ${data.status}` };
+    }
+  }
+  return { success: false, message: "Track not found" };
+}
+
+function handleMarkTrackPlayedInSlot(data) {
+  const { tracksSheet } = getSheets();
+  const rows = tracksSheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][4]).trim() === String(data.fileId).trim()) {
+      tracksSheet.getRange(i + 1, 10).setValue("true");
+      return { success: true, message: "Audio marked as debuted in slot" };
+    }
+  }
+  return { success: false, message: "Track not found" };
+}
+
 function handlePushTrack(data) {
   if (data.adminKey !== ADMIN_SECRET_KEY) return { success: false, message: "Unauthorized" };
   const { settingsSheet } = getSheets();
@@ -308,7 +345,6 @@ function handlePushTrack(data) {
   return { success: true, message: "Audio pushed to all live listeners instantly!", pushVersion: pushVer };
 }
 
-// ----------------- UPDATE TRACK CATEGORY -----------------
 function handleUpdateTrackCategory(data) {
   if (data.adminKey !== ADMIN_SECRET_KEY) return { success: false, message: "Unauthorized" };
   const { tracksSheet } = getSheets();
@@ -323,7 +359,7 @@ function handleUpdateTrackCategory(data) {
   return { success: false, message: "Track not found" };
 }
 
-// ----------------- BROADCAST DATA (Chronological) -----------------
+// ----------------- BROADCAST DATA -----------------
 function getStationData() {
   const { tracksSheet, settingsSheet } = getSheets();
   const trackRows = tracksSheet.getDataRange().getValues();
@@ -339,7 +375,9 @@ function getStationData() {
         fileId: trackRows[i][4],
         streamUrl: trackRows[i][5],
         createdAt: trackRows[i][6] || "",
-        category: trackRows[i][7] || "Random plays"
+        category: trackRows[i][7] || "Random plays",
+        approvalStatus: trackRows[i][8] || "pending",
+        playedInSlot: String(trackRows[i][9]) === "true"
       });
     }
   }

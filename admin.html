@@ -85,16 +85,8 @@
       border-bottom: 1px solid var(--border);
       gap: 12px;
     }
-    .track-meta {
-      flex: 1;
-      min-width: 250px;
-    }
-    .track-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .track-meta { flex: 1; min-width: 250px; }
+    .track-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .cat-select {
       background: #090d16;
@@ -104,6 +96,17 @@
       border-radius: 6px;
       font-size: 0.78rem;
     }
+
+    .badge-tag {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .badge-approved { background: rgba(0, 230, 118, 0.2); color: var(--green); }
+    .badge-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
 
     .slot-item {
       background: rgba(0,0,0,0.25);
@@ -179,16 +182,38 @@
 
   <div id="adminDashboard" style="display:none;">
     
+    <!-- 1) AUDIO APPROVALS MANAGEMENT PANEL -->
+    <div class="panel">
+      <h2><i class="fa-solid fa-file-circle-check" style="color:var(--cyan);"></i> Audio Upload Approvals</h2>
+      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
+        Audios uploaded by users remain pending until approved. Once approved, they must first be scheduled and played in an hourly slot before entering any random play rotation.
+      </p>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Contributor</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Hourly Debut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="audioApprovalsTableBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--sub);">Loading audio requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- LIVE ONLINE LISTENERS -->
     <div class="panel">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2><i class="fa-solid fa-tower-broadcast" style="color:var(--green);"></i> Live Online Listeners Details</h2>
         <button class="btn btn-sm" style="background:#21262d; color:#fff;" onclick="refreshAdminData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
-      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
-        Real-time list of listeners currently streaming live broadcasts.
-      </p>
-
       <div class="table-responsive">
         <table>
           <thead>
@@ -206,17 +231,16 @@
       </div>
     </div>
 
-    <!-- 1) NAMED HOURLY SLOTS SCHEDULER WITH LIVE SEARCH & FIND -->
+    <!-- NAMED HOURLY SLOTS SCHEDULER WITH LIVE SEARCH & FIND -->
     <div class="panel">
       <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
         <h2><i class="fa-solid fa-clock" style="color:var(--cyan);"></i> Named Hourly Slots (5 AM – 11 PM)</h2>
         <button class="btn btn-primary btn-sm" onclick="saveHourlySlots()"><i class="fa-solid fa-floppy-disk"></i> Save Schedule & Names</button>
       </div>
       <p style="font-size:0.8rem; color:var(--sub); margin-bottom:14px;">
-        Search and select audio tracks for hourly slots. <strong>Slot plays</strong> audios are kept exclusively for scheduled slots and will never play during random plays.
+        Only approved tracks can be added to hourly slots. Audios debut here first before any random plays.
       </p>
 
-      <!-- 1) Search and Find Track to Slot Form -->
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px;">
         <div class="form-group">
           <label>Select Hourly Slot</label>
@@ -249,7 +273,7 @@
         </div>
 
         <div class="form-group">
-          <label>Matching Audio Track</label>
+          <label>Approved Audio Track</label>
           <select id="slotTrackSelector"></select>
         </div>
 
@@ -261,17 +285,13 @@
       <div id="hourlySlotsDisplay"></div>
     </div>
 
-    <!-- 1 & 3) CHRONOLOGICAL LIBRARY, CATEGORY SWITCHER & INSTANT PUSH -->
+    <!-- AUDIO LIBRARY & INSTANT PUSH -->
     <div class="panel">
-      <h2><i class="fa-solid fa-list" style="color:var(--accent);"></i> Audio Library, Categories & Instant Push</h2>
-      <p style="font-size:0.8rem; color:var(--sub); margin-bottom:16px;">
-        Change category anytime: <strong>Random plays</strong> play in general rotation; <strong>Slot plays</strong> only play when scheduled in an hour slot. Click <strong><i class="fa-solid fa-bolt"></i> Push Now</strong> to broadcast any track immediately.
-      </p>
-
+      <h2><i class="fa-solid fa-list" style="color:var(--accent);"></i> Audio Library & Instant Push</h2>
       <div id="chronologicalList">Loading library...</div>
     </div>
 
-    <!-- CONTRIBUTOR APPROVALS -->
+    <!-- CONTRIBUTOR USER APPROVALS -->
     <div class="panel">
       <h2><i class="fa-solid fa-user-check"></i> Contributor User Approvals</h2>
       <div class="table-responsive">
@@ -297,11 +317,11 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
         <div class="form-group">
           <label>Station Display Name</label>
-          <input type="text" id="cfgStationName" value="Community Voice FM">
+          <input type="text" id="cfgStationName" value="Tuner">
         </div>
         <div class="form-group">
           <label>Broadcast Engine Mode</label>
-          <input type="text" value="Chronological & Random Hourly" disabled>
+          <input type="text" value="Chronological & Hourly Slot Priority" disabled>
         </div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Settings</button>
@@ -343,6 +363,7 @@
         if (data.settings && data.settings.station_name) {
           document.getElementById('cfgStationName').value = data.settings.station_name;
         }
+        renderAudioApprovals();
         renderChronologicalTracks();
         renderUsers();
         renderLiveListeners(data.activeListeners || []);
@@ -364,9 +385,71 @@
       const res = await fetch(`${BACKEND_URL}?action=getAdminData&key=${encodeURIComponent(adminPasscode)}`);
       const data = await res.json();
       if (data.success) {
+        tracks = data.tracks || [];
+        renderAudioApprovals();
+        renderChronologicalTracks();
         renderLiveListeners(data.activeListeners || []);
       }
     } catch(e) {}
+  }
+
+  // 1) Render Audio Approvals Table
+  function renderAudioApprovals() {
+    const tbody = document.getElementById('audioApprovalsTableBody');
+    if (!tracks || tracks.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--sub);">No audio files found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = tracks.map(t => {
+      const isApproved = (t.approvalStatus === "approved");
+      return `
+        <tr>
+          <td><strong>${t.title}</strong></td>
+          <td>${t.contributor || 'Community'}</td>
+          <td><span class="badge-tag" style="background:rgba(255,255,255,0.06);">${t.category}</span></td>
+          <td>
+            <span class="badge-tag ${isApproved ? 'badge-approved' : 'badge-pending'}">
+              ${t.approvalStatus || 'pending'}
+            </span>
+          </td>
+          <td>
+            <span style="font-size:0.75rem; color:${t.playedInSlot ? 'var(--green)' : 'var(--sub)'};">
+              ${t.playedInSlot ? '<i class="fa-solid fa-check"></i> Debut Complete' : '<i class="fa-solid fa-hourglass-start"></i> Waiting Hourly Debut'}
+            </span>
+          </td>
+          <td>
+            ${isApproved
+              ? `<button class="btn btn-danger btn-sm" onclick="setAudioApproval('${t.fileId}', 'pending')">Revoke</button>`
+              : `<button class="btn btn-green btn-sm" onclick="setAudioApproval('${t.fileId}', 'approved')"><i class="fa-solid fa-check"></i> Approve</button>`
+            }
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function setAudioApproval(fileId, status) {
+    showToast("Updating audio approval...");
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "adminUpdateAudioApproval", adminKey: adminPasscode, fileId, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        const trk = tracks.find(t => t.fileId === fileId);
+        if (trk) trk.approvalStatus = status;
+        renderAudioApprovals();
+        renderChronologicalTracks();
+        filterSlotTrackSelector();
+        showToast(data.message);
+      } else {
+        showToast("Failed to update approval");
+      }
+    } catch(err) {
+      showToast("Error updating audio approval");
+    }
   }
 
   function renderLiveListeners(listeners) {
@@ -385,25 +468,27 @@
     `).join('');
   }
 
-  // 1) Search and Find Filter for Hourly Slots Track Selector
+  // Filter only approved tracks for assignment to hourly slots
   function filterSlotTrackSelector() {
     const query = (document.getElementById('slotTrackSearch').value || "").toLowerCase().trim();
     const sel = document.getElementById('slotTrackSelector');
     
+    // Only approved tracks are allowed to be scheduled
     const filtered = tracks.filter(t => {
+      const approved = (t.approvalStatus === "approved");
       const title = (t.title || "").toLowerCase();
       const contrib = (t.contributor || "").toLowerCase();
-      return title.includes(query) || contrib.includes(query);
+      return approved && (title.includes(query) || contrib.includes(query));
     });
 
     if (filtered.length === 0) {
-      sel.innerHTML = `<option value="">No matching tracks</option>`;
+      sel.innerHTML = `<option value="">No matching approved tracks</option>`;
       return;
     }
 
     sel.innerHTML = filtered.map(t => {
-      const catBadge = t.category === "Slot plays" ? "[Slot Only]" : "[Random Playable]";
-      return `<option value="${t.fileId}">${catBadge} ${t.title} (${t.contributor || 'Community'})</option>`;
+      const debutBadge = t.playedInSlot ? "" : "[First Debut]";
+      return `<option value="${t.fileId}">${debutBadge} ${t.title} (${t.contributor || 'Community'})</option>`;
     }).join('');
   }
 
@@ -427,13 +512,13 @@
             </div>
           </div>
           <div>
-            ${list.length === 0 ? '<span style="font-size:0.75rem; color:var(--sub);">Empty slot: audios will play randomly from total library.</span>' : ''}
+            ${list.length === 0 ? '<span style="font-size:0.75rem; color:var(--sub);">Empty slot: plays random approved tracks that have already debuted.</span>' : ''}
             ${list.map((fileId, idx) => {
               const trk = tracks.find(t => t.fileId === fileId);
               const title = trk ? trk.title : 'Track (' + fileId + ')';
               return `
                 <span class="slot-track-tag">
-                  <strong>#${idx + 1}</strong>${title}
+                  <strong>#${idx + 1}</strong> ${title}
                   <i class="fa-solid fa-circle-xmark" onclick="removeTrackFromSlot(${h},${idx})"></i>
                 </span>
               `;
@@ -453,7 +538,7 @@
   function addTrackToSelectedSlot() {
     const hour = document.getElementById('slotHourSelector').value;
     const fileId = document.getElementById('slotTrackSelector').value;
-    if (!fileId) return showToast("Select an audio track");
+    if (!fileId) return showToast("Select an approved audio track");
 
     if (!hourlySchedules[hour]) hourlySchedules[hour] = { name: "", trackIds: [] };
     hourlySchedules[hour].trackIds.push(fileId);
@@ -482,45 +567,44 @@
     }
   }
 
-  // 1) Render Audio Library with Category Dropdown Switcher
   function renderChronologicalTracks() {
     const box = document.getElementById('chronologicalList');
     if (tracks.length === 0) {
       box.innerHTML = `<p style="color:var(--sub); font-size:0.85rem;">No tracks uploaded yet.</p>`;
       return;
     }
-    box.innerHTML = tracks.map((t, idx) => `
-      <div class="track-row">
-        <div style="display:flex; align-items:center; gap:12px;" class="track-meta">
-          <strong style="width:24px; color:var(--accent);">${idx + 1}</strong>
-          <div>
-            <div style="font-weight:600; font-size:0.95rem;">${t.title}</div>
-            <div style="font-size:0.75rem; color:var(--sub);">
-              by ${t.contributor || 'Community'} • ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Original'}
+    box.innerHTML = tracks.map((t, idx) => {
+      const isApproved = (t.approvalStatus === "approved");
+      return `
+        <div class="track-row">
+          <div style="display:flex; align-items:center; gap:12px;" class="track-meta">
+            <strong style="width:24px; color:var(--accent);">${idx + 1}</strong>
+            <div>
+              <div style="font-weight:600; font-size:0.95rem;">${t.title}</div>
+              <div style="font-size:0.75rem; color:var(--sub);">
+                by ${t.contributor || 'Community'} • ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Original'}
+                • <span class="badge-tag ${isApproved ? 'badge-approved' : 'badge-pending'}" style="font-size:0.65rem;">${t.approvalStatus || 'pending'}</span>
+              </div>
             </div>
           </div>
+
+          <div class="track-actions">
+            <select class="cat-select" onchange="changeTrackCategory('${t.fileId}', this.value)">
+              <option value="Random plays" ${t.category !== 'Slot plays' ? 'selected' : ''}>Random plays</option>
+              <option value="Slot plays" ${t.category === 'Slot plays' ? 'selected' : ''}>Slot plays</option>
+            </select>
+
+            <button class="btn btn-push btn-sm" ${!isApproved ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''} onclick="pushTrackToLive('${t.fileId}', '${t.title.replace(/'/g, "\\'")}')">
+              <i class="fa-solid fa-bolt"></i> Push Now
+            </button>
+
+            <button class="btn btn-danger btn-sm" onclick="deleteTrack('${t.fileId}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>
-
-        <div class="track-actions">
-          <!-- 1) Category Switcher -->
-          <select class="cat-select" onchange="changeTrackCategory('${t.fileId}', this.value)">
-            <option value="Random plays" ${t.category !== 'Slot plays' ? 'selected' : ''}>Random plays</option>
-            <option value="Slot plays" ${t.category === 'Slot plays' ? 'selected' : ''}>Slot plays</option>
-          </select>
-
-          <!-- Push Button -->
-          <button class="btn btn-push btn-sm" onclick="pushTrackToLive('${t.fileId}', '${t.title.replace(/'/g, "\\'")}')">
-            <i class="fa-solid fa-bolt"></i> Push Now
-          </button>
-
-          <!-- Delete Button -->
-          <button class="btn btn-danger btn-sm" onclick="deleteTrack('${t.fileId}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
-  // 1) Change Audio Category Handler
   async function changeTrackCategory(fileId, newCategory) {
     showToast("Updating category...");
     try {
@@ -568,6 +652,7 @@
       const data = await res.json();
       if (data.success) {
         tracks = tracks.filter(t => t.fileId !== fileId);
+        renderAudioApprovals();
         renderChronologicalTracks();
         filterSlotTrackSelector();
         showToast("Track deleted");

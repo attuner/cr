@@ -109,14 +109,7 @@
       transition: all 0.2s ease;
     }
     .btn-header:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.2); }
-    .btn-install {
-      background: linear-gradient(135deg, var(--cyan), #0077ff);
-      border: none;
-      color: #fff;
-      display: none;
-    }
 
-    /* Portrait Layout */
     main {
       flex: 1;
       width: 100%;
@@ -229,7 +222,7 @@
     }
     .station-loading-pill i { color: var(--accent); }
 
-    /* 2) RESPONSIVE LANDSCAPE MODE (Width > Height) */
+    /* RESPONSIVE LANDSCAPE MODE */
     @media (orientation: landscape) {
       body, .app-shell {
         height: 100vh;
@@ -443,17 +436,12 @@
     <div class="header-actions">
       <button class="btn-header" onclick="openScheduleModal()">
         <i class="fa-solid fa-calendar-days" style="color:var(--cyan);"></i>
-        <span></span>
+        <span>Schedule</span>
       </button>
-
-     <!-- <button id="pwaInstallBtn" class="btn-header btn-install" onclick="installPWA()">
-        <i class="fa-solid fa-download"></i>
-        <span></span>
-      </button> -->
 
       <button class="btn-header" onclick="openAccountModal()">
         <i class="fa-solid fa-user-circle"></i>
-        <span id="headerAccountLabel"></span>
+        <span id="headerAccountLabel">Login</span>
       </button>
     </div>
   </header>
@@ -565,7 +553,6 @@
             <textarea id="audioDesc" rows="2" placeholder="Brief info about this audio..."></textarea>
           </div>
 
-          <!-- 1) Audio Category Selection on Upload -->
           <div class="form-group">
             <label>Category</label>
             <select id="audioCategory">
@@ -634,33 +621,12 @@
   let isPlayingScheduledSlot = false;
   let scheduledSlotFinished = false;
   let scheduledSlotHourOrigin = -1;
-
-  // 3) Currently playing track reference to guarantee exact 100% audio-to-title display matching
   let currentlyPlayingTrack = null;
 
   const audioCache = {};
   let activePlayer = new Audio();
   let standbyPlayer = new Audio();
   let isStandbyReady = false;
-
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('pwaInstallBtn').style.display = 'inline-flex';
-  });
-
-  function installPWA() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choice) => {
-        if (choice.outcome === 'accepted') {
-          document.getElementById('pwaInstallBtn').style.display = 'none';
-        }
-        deferredPrompt = null;
-      });
-    }
-  }
 
   window.addEventListener('load', () => {
     if ('caches' in window) {
@@ -746,13 +712,23 @@
 
   function isHourSlotDefined(h) {
     const slot = hourlySchedules[String(h)];
-    return (h >= 5 && h <= 23 && slot && slot.trackIds && slot.trackIds.length > 0);
+    if (h >= 5 && h <= 23 && slot && slot.trackIds && slot.trackIds.length > 0) {
+      // Must have at least one approved track
+      return slot.trackIds.some(id => {
+        const t = allTracks.find(item => item.fileId === id);
+        return t && t.approvalStatus === "approved";
+      });
+    }
+    return false;
   }
 
-  // 1) Returns only audios marked as 'Random plays'. Slot plays audios are strictly omitted.
+  // 1) Only audios that are APPROVED and HAVE PLAYED IN A SLOT and ARE NOT "Slot plays" can be in random plays
   function getRandomEligibleTracks() {
-    const eligible = allTracks.filter(t => (t.category !== "Slot plays"));
-    return eligible.length > 0 ? eligible : allTracks;
+    return allTracks.filter(t => (
+      t.approvalStatus === "approved" &&
+      t.playedInSlot === true &&
+      t.category !== "Slot plays"
+    ));
   }
 
   function resolveCurrentPlaylist() {
@@ -766,7 +742,8 @@
     if (isHourSlotDefined(hour)) {
       const scheduled = [];
       slot.trackIds.forEach(id => {
-        const found = allTracks.find(t => t.fileId === id);
+        // Enforce that only approved audios are queued
+        const found = allTracks.find(t => t.fileId === id && t.approvalStatus === "approved");
         if (found) scheduled.push(found);
       });
 
@@ -784,8 +761,9 @@
     scheduledSlotFinished = true;
     scheduledSlotHourOrigin = -1;
     slotBadge.innerText = `Random Library Shuffle`;
-    // 1) Random plays exclusively play audios of Random category
-    return shuffleArray([...getRandomEligibleTracks()]);
+
+    const randomEligible = getRandomEligibleTracks();
+    return shuffleArray([...randomEligible]);
   }
 
   function shuffleArray(arr) {
@@ -824,7 +802,7 @@
           currentIndex = 0;
           playCurrentTrackImmediate();
         } else {
-          document.getElementById('stationLoadingPill').innerHTML = `<span>No tracks found in library</span>`;
+          document.getElementById('stationLoadingPill').innerHTML = `<span>No eligible tracks available to broadcast</span>`;
         }
       }
     } catch (e) {
@@ -868,7 +846,7 @@
         if (data.settings.push_version && data.settings.push_version !== lastPushVersion) {
           lastPushVersion = data.settings.push_version;
           const pushedFileId = data.settings.pushed_track;
-          const target = allTracks.find(t => t.fileId === pushedFileId);
+          const target = allTracks.find(t => t.fileId === pushedFileId && t.approvalStatus === "approved");
           if (target) {
             showToast("Priority Audio Broadcast: " + target.title);
             activePlaylist = [target, ...resolveCurrentPlaylist()];
@@ -910,6 +888,18 @@
     return track.streamUrl;
   }
 
+  // Notify backend when an audio debuts in an hourly slot
+  async function markAudioDebuted(fileId) {
+    try {
+      await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "markTrackPlayedInSlot", fileId })
+      });
+      const t = allTracks.find(item => item.fileId === fileId);
+      if (t) t.playedInSlot = true;
+    } catch(e) {}
+  }
+
   // ================= ZERO-GAP DUAL BUFFER ENGINE =================
   function setupPlayerEvents(player) {
     player.addEventListener('timeupdate', () => {
@@ -938,20 +928,21 @@
         activePlaylist = resolveCurrentPlaylist();
         nextIdx = 0;
       } else {
-        // 1) Slot extended filler strictly pulls from Random category
+        // Slot filler only pulls from approved, debuted random tracks
         const randomTracks = shuffleArray([...getRandomEligibleTracks()]);
         activePlaylist = activePlaylist.concat(randomTracks);
         document.getElementById('currentSlotDisplay').innerText = `Slot Extended: Random Library Filler`;
       }
     }
 
+    if (activePlaylist.length === 0) return;
     nextIdx = nextIdx % activePlaylist.length;
     const nextTrack = activePlaylist[nextIdx];
     const src = await resolveTrackAudio(nextTrack);
     if (src) {
       standbyPlayer.src = src;
       standbyPlayer.load();
-      standbyPlayer._trackRef = nextTrack; // Lock track reference
+      standbyPlayer._trackRef = nextTrack;
       isStandbyReady = true;
     }
   }
@@ -973,6 +964,7 @@
       }
     }
 
+    if (activePlaylist.length === 0) return;
     currentIndex = nextIdx % activePlaylist.length;
 
     const temp = activePlayer;
@@ -980,8 +972,12 @@
     standbyPlayer = temp;
     isStandbyReady = false;
 
-    // 3) Exact Title Match: Update UI with the active player's exact loaded track
     currentlyPlayingTrack = activePlayer._trackRef || activePlaylist[currentIndex];
+
+    // If played in scheduled slot, mark debut complete
+    if (isPlayingScheduledSlot && currentlyPlayingTrack && !currentlyPlayingTrack.playedInSlot) {
+      markAudioDebuted(currentlyPlayingTrack.fileId);
+    }
 
     if (!activePlayer.src || activePlayer.src === "" || activePlayer.src.includes("data:audio/wav;base64")) {
       const src = await resolveTrackAudio(currentlyPlayingTrack);
@@ -1003,6 +999,10 @@
     activePlayer._trackRef = track;
     currentlyPlayingTrack = track;
     updateTunerUI(currentlyPlayingTrack);
+
+    if (isPlayingScheduledSlot && track && !track.playedInSlot) {
+      markAudioDebuted(track.fileId);
+    }
 
     const playPromise = activePlayer.play();
     isPlaying = true;
@@ -1055,7 +1055,6 @@
     }
   }
 
-  // 3) Exactly binds display to the playing track
   function updateTunerUI(trackObj) {
     const track = trackObj || currentlyPlayingTrack || (activePlaylist ? activePlaylist[currentIndex] : null);
     const btn = document.getElementById('radioPowerBtn');
@@ -1252,7 +1251,7 @@
         const result = await res.json();
 
         if (result.success) {
-          showToast("Upload Successful! Added to library.");
+          showToast(result.message || "Upload Successful! Awaiting Admin Approval.");
           document.getElementById('audioTitle').value = "";
           document.getElementById('audioDesc').value = "";
           clearSelectedFile();
